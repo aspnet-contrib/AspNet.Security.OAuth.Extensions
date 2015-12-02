@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using Moq;
@@ -13,7 +14,7 @@ using Xunit;
 
 namespace Owin.Security.OAuth.Validation.Tests {
     public class OAuthValidationMiddlewareTests {
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task InvalidTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer();
@@ -30,7 +31,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ValidTokenAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer();
@@ -48,7 +49,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task MissingAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -67,7 +68,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task InvalidAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -86,7 +87,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ValidAudienceAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -106,7 +107,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
+        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         public async Task ExpiredTicketCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer();
