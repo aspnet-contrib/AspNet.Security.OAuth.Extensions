@@ -13,8 +13,8 @@ namespace Owin.Security.OAuth.Validation {
                 // format must match the values used by ASOS.
                 options.TicketFormat = new TicketDataFormat(
                     app.CreateDataProtector(
-                        "Microsoft.Owin.Security.OAuth",
-                        "Access_Token", "v1"));
+                        "Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware",
+                        "oidc-server", "Access_Token", "v1"));
             }
 
             if (options.Logger == null) {
