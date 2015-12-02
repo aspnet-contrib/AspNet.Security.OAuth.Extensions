@@ -1,0 +1,30 @@
+{
+    "version": "1.0.0-*",
+    "description": "OAuth2 introspection middleware for OWIN/Katana",
+    "authors": [ "Kévin Chalet" ],
+    "owners": [ "Kévin Chalet" ],
+
+    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+
+    "dependencies": {
+        "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        },
+
+        "Microsoft.Owin.Security": "3.0.1",
+
+        "Newtonsoft.Json": "7.0.1"
+    },
+
+    "frameworks": {
+        "net451": {
+            "frameworkAssemblies": {
+                "System.Net.Http": "4.0.0.0"
+            }
+        }
+    }
+}

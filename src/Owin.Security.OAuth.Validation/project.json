@@ -1,0 +1,22 @@
+﻿{
+    "version": "1.0.0-*",
+    "description": "OAuth2 validation middleware for OWIN/Katana",
+    "authors": [ "Kévin Chalet" ],
+    "owners": [ "Kévin Chalet" ],
+
+    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+
+    "dependencies": {
+        "Owin.Security.OpenIdConnect.Extensions": "1.0.0-*",
+
+        "Microsoft.Extensions.NotNullAttribute.Sources": {
+            "type": "build",
+            "version": "1.0.0-*"
+        }
+    },
+
+    "frameworks": {
+        "net451": { }
+    }
+}

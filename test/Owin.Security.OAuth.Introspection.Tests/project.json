@@ -1,0 +1,28 @@
+{
+    "authors": [ "Kévin Chalet" ],
+    "owners": [ "Kévin Chalet" ],
+
+    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+
+    "compilationOptions": {
+        "warningsAsErrors": true
+    },
+
+    "dependencies": {
+        "Owin.Security.OAuth.Introspection": "1.0.0-*",
+        "Owin.Security.OpenIdConnect.Server": "1.0.0-*",
+
+        "Microsoft.Owin.Testing": "3.0.1",
+
+        "xunit.runner.aspnet": "2.0.0-aspnet-*"
+    },
+
+    "commands": {
+        "test": "xunit.runner.aspnet"
+    },
+
+    "frameworks": {
+        "dnx451": { }
+    }
+}
