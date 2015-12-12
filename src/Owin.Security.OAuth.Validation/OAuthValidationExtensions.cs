@@ -18,6 +18,19 @@ namespace Owin {
         /// Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
         /// </summary>
         /// <param name="app">The application builder.</param>
+        /// <returns>The application builder.</returns>
+        public static IAppBuilder UseOAuthValidation([NotNull] this IAppBuilder app) {
+            if (app == null) {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseOAuthValidation(options => { });
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
+        /// </summary>
+        /// <param name="app">The application builder.</param>
         /// <param name="configuration">The delegate used to configure the validation options.</param>
         /// <returns>The application builder.</returns>
         public static IAppBuilder UseOAuthValidation(
