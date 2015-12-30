@@ -151,10 +151,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties();
-                      properties.SetAudiences(new[] { "http://www.google.com/" });
+                      var ticket = new AuthenticationTicket(identity, null);
+                      ticket.SetAudiences(new[] { "http://www.google.com/" });
 
-                      return new AuthenticationTicket(identity, properties);
+                      return ticket;
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "token-3")))
@@ -162,13 +162,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties();
-                      properties.SetAudiences(new[] {
+                      var ticket = new AuthenticationTicket(identity, null);
+                      ticket.SetAudiences(new[] {
                           "http://www.google.com/",
                           "http://www.fabrikam.com/"
                       });
 
-                      return new AuthenticationTicket(identity, properties);
+                      return ticket;
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "token-4")))
