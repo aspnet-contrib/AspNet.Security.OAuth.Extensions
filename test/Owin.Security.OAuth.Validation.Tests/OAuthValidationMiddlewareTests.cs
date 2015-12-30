@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -15,7 +16,6 @@ using Microsoft.AspNet.Testing.xunit;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using Moq;
-using Owin.Security.OpenIdConnect.Extensions;
 using Xunit;
 
 namespace Owin.Security.OAuth.Validation.Tests {
@@ -141,9 +141,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties();
-
-                      return new AuthenticationTicket(identity, properties);
+                      return new AuthenticationTicket(identity, new AuthenticationProperties());
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "token-2")))
@@ -151,10 +149,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var ticket = new AuthenticationTicket(identity, null);
-                      ticket.SetAudiences(new[] { "http://www.google.com/" });
+                      var properties = new AuthenticationProperties(new Dictionary<string, string> {
+                          [OAuthValidationConstants.Properties.Audiences] = "http://www.google.com/"
+                      });
 
-                      return ticket;
+                      return new AuthenticationTicket(identity, properties);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "token-3")))
@@ -162,13 +161,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var ticket = new AuthenticationTicket(identity, null);
-                      ticket.SetAudiences(new[] {
-                          "http://www.google.com/",
-                          "http://www.fabrikam.com/"
+                      var properties = new AuthenticationProperties(new Dictionary<string, string> {
+                          [OAuthValidationConstants.Properties.Audiences] = "http://www.google.com/ http://www.fabrikam.com/"
                       });
 
-                      return ticket;
+                      return new AuthenticationTicket(identity, properties);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "token-4")))
@@ -200,7 +197,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
                         return Task.FromResult(0);
                     }
 
-                    return context.Response.WriteAsync(context.Authentication.User.GetClaim(ClaimTypes.NameIdentifier));
+                    var identifier = context.Authentication.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                    return context.Response.WriteAsync(identifier);
                 });
             });
         }

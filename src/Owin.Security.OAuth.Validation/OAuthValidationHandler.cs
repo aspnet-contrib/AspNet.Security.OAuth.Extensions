@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
-using Owin.Security.OpenIdConnect.Extensions;
 
 namespace Owin.Security.OAuth.Validation {
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions> {
@@ -75,14 +74,18 @@ namespace Owin.Security.OAuth.Validation {
                 return Task.FromResult(true);
             }
 
-            // Ensure that the registered audience can be found in the
-            // "audiences" property stored in the authentication ticket.
-            var audiences = ticket.GetAudiences();
-            if (audiences.Contains(Options.Audience, StringComparer.Ordinal)) {
-                return Task.FromResult(true);
+            // Extract the audiences from the authentication ticket.
+            string audiences;
+            if (!ticket.Properties.Dictionary.TryGetValue(OAuthValidationConstants.Properties.Audiences, out audiences)) {
+                return Task.FromResult(false);
             }
 
-            return Task.FromResult(false);
+            // Ensure that the authentication ticket contains the registered audience.
+            if (!audiences.Split(' ').Contains(Options.Audience, StringComparer.Ordinal)) {
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
     }
 }
