@@ -172,7 +172,8 @@ namespace Owin.Security.OAuth.Introspection {
                 case JTokenType.Array: {
                     // When the "aud" claim is an array, at least one value must correspond
                     // to the audience registered in the introspection middleware options.
-                    var audiences = payload.Value<JArray>(OAuthIntrospectionConstants.Claims.Audience).Select(audience => audience.Value<string>());
+                    var audiences = payload.Value<JArray>(OAuthIntrospectionConstants.Claims.Audience)
+                                           .Select(audience => audience.Value<string>());
                     if (audiences.Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
                         return Task.FromResult(true);
                     }
