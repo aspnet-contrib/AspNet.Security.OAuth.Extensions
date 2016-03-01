@@ -23,26 +23,54 @@ using Newtonsoft.Json.Linq;
 namespace AspNet.Security.OAuth.Introspection {
     public class OAuthIntrospectionHandler : AuthenticationHandler<OAuthIntrospectionOptions> {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync() {
-            string header = Request.Headers[HeaderNames.Authorization];
-            if (string.IsNullOrEmpty(header)) {
-                Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+            var context = new RetrieveTokenContext(Context, Options);
+            await Options.Events.RetrieveToken(context);
+
+            if (context.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (context.Ticket == null) {
+                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
+                }
+
+                return AuthenticateResult.Success(context.Ticket);
+            }
+
+            else if (context.Skipped) {
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return AuthenticateResult.Skip();
             }
 
-            // Ensure that the authorization header contains the mandatory "Bearer" scheme.
-            // See https://tools.ietf.org/html/rfc6750#section-2.1
-            if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                      "scheme was used in the 'Authorization' header.");
+            var token = context.Token;
 
-                return AuthenticateResult.Skip();
-            }
+            if (string.IsNullOrEmpty(token)) {
+                // Try to retrieve the access token from the authorization header.
+                string header = Request.Headers[HeaderNames.Authorization];
+                if (string.IsNullOrEmpty(header)) {
+                    Logger.LogInformation("Authentication was skipped because no bearer token was received.");
 
-            var token = header.Substring("Bearer ".Length);
-            if (string.IsNullOrWhiteSpace(token)) {
-                return AuthenticateResult.Fail("Authentication failed because the bearer token " +
-                                               "was missing from the 'Authorization' header.");
+                    return AuthenticateResult.Skip();
+                }
+
+                // Ensure that the authorization header contains the mandatory "Bearer" scheme.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1
+                if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
+                    Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                          "scheme was used in the 'Authorization' header.");
+
+                    return AuthenticateResult.Skip();
+                }
+
+                // Extract the token from the authorization header.
+                token = header.Substring("Bearer ".Length).Trim();
+
+                if (string.IsNullOrEmpty(token)) {
+                    Logger.LogInformation("Authentication was skipped because the bearer token " +
+                                          "was missing from the 'Authorization' header.");
+
+                    return AuthenticateResult.Skip();
+                }
             }
 
             // Try to resolve the authentication ticket from the distributed cache. If none
@@ -57,13 +85,6 @@ namespace AspNet.Security.OAuth.Introspection {
                                                    "server rejected the access token.");
                 }
 
-                // Ensure that the access token was issued
-                // to be used with this resource server.
-                if (!await ValidateAudienceAsync(payload)) {
-                    return AuthenticateResult.Fail("Authentication failed because the access token " +
-                                                   "was not valid for this resource server.");
-                }
-
                 // Create a new authentication ticket from the introspection
                 // response returned by the authorization server.
                 ticket = await CreateTicketAsync(payload);
@@ -76,6 +97,40 @@ namespace AspNet.Security.OAuth.Introspection {
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow) {
                 return AuthenticateResult.Fail("Authentication failed because the access token was expired.");
+            }
+
+            // Ensure that the access token was issued
+            // to be used with this resource server.
+            if (!ValidateAudience(ticket)) {
+                return AuthenticateResult.Fail("Authentication failed because the access token " +
+                                               "was not valid for this resource server.");
+            }
+
+            var notification = new ValidateTokenContext(Context, Options, ticket);
+            await Options.Events.ValidateToken(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
+                }
+
+                return AuthenticateResult.Success(notification.Ticket);
+            }
+
+            else if (notification.Skipped) {
+                Logger.LogInformation("Authentication was skipped by application code.");
+
+                return AuthenticateResult.Skip();
+            }
+
+            // Allow the application code to replace the ticket
+            // reference from the ValidateToken event.
+            ticket = notification.Ticket;
+
+            if (ticket == null) {
+                return AuthenticateResult.Fail("Authentication was stopped by application code.");
             }
 
             return AuthenticateResult.Success(ticket);
@@ -135,6 +190,9 @@ namespace AspNet.Security.OAuth.Introspection {
                 [OAuthIntrospectionConstants.Parameters.TokenTypeHint] = OAuthIntrospectionConstants.TokenTypes.AccessToken
             });
 
+            var notification = new RequestTokenIntrospectionContext(Context, Options, request, token);
+            await Options.Events.RequestTokenIntrospection(notification);
+
             var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Context.RequestAborted);
             if (!response.IsSuccessStatusCode) {
                 Logger.LogError("An error occurred when validating an access token: the remote server " +
@@ -149,51 +207,28 @@ namespace AspNet.Security.OAuth.Introspection {
             return JObject.Parse(await response.Content.ReadAsStringAsync());
         }
 
-        protected virtual Task<bool> ValidateAudienceAsync(JObject payload) {
+        protected virtual bool ValidateAudience(AuthenticationTicket ticket) {
             // If no explicit audience has been configured,
             // skip the default audience validation.
             if (Options.Audiences.Count == 0) {
-                return Task.FromResult(true);
+                return true;
             }
 
-            // If no "aud" claim was returned by the authorization server,
-            // assume the access token was not specific enough and reject it.
-            if (payload[OAuthIntrospectionConstants.Claims.Audience] == null) {
-                return Task.FromResult(false);
+            string audiences;
+            // Extract the audiences from the authentication ticket.
+            if (!ticket.Properties.Items.TryGetValue(OAuthIntrospectionConstants.Properties.Audiences, out audiences)) {
+                return false;
             }
 
-            // Note: the "aud" claim can be either a string or an array.
-            // See https://tools.ietf.org/html/rfc7662#section-2.2
-            switch (payload[OAuthIntrospectionConstants.Claims.Audience].Type) {
-                case JTokenType.Array: {
-                    // When the "aud" claim is an array, at least one value must correspond
-                    // to the audience registered in the introspection middleware options.
-                    var audiences = payload.Value<JArray>(OAuthIntrospectionConstants.Claims.Audience)
-                                           .Select(audience => audience.Value<string>());
-                    if (audiences.Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
-                        return Task.FromResult(true);
-                    }
-
-                    return Task.FromResult(false);
-                }
-
-                case JTokenType.String: {
-                    // When the "aud" claim is a string, it must exactly match the
-                    // audience registered in the introspection middleware options.
-                    var audience = payload.Value<string>(OAuthIntrospectionConstants.Claims.Audience);
-                    if (Options.Audiences.Contains(audience, StringComparer.Ordinal)) {
-                        return Task.FromResult(true);
-                    }
-
-                    return Task.FromResult(false);
-                }
-
-                default:
-                    return Task.FromResult(false);
+            // Ensure that the authentication ticket contains at least one of the registered audiences.
+            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+                return false;
             }
+
+            return true;
         }
 
-        protected virtual Task<AuthenticationTicket> CreateTicketAsync(JObject payload) {
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(JObject payload) {
             var identity = new ClaimsIdentity(Options.AuthenticationScheme);
             var properties = new AuthenticationProperties();
 
@@ -254,6 +289,25 @@ namespace AspNet.Security.OAuth.Introspection {
 
                         continue;
                     }
+
+                    // Store the audience(s) in the ticket properties.
+                    case OAuthIntrospectionConstants.Claims.Audience: {
+                        if (property.Value.Type == JTokenType.Array) {
+                            var value = (JArray) property.Value;
+                            if (value == null) {
+                                continue;
+                            }
+
+                            var audiences = string.Join(" ", value.Select(item => item.Value<string>()));
+                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] = audiences;
+                        }
+
+                        else if (property.Value.Type == JTokenType.String) {
+                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] = (string) property.Value;
+                        }
+
+                        continue;
+                    }
                 }
 
                 switch (property.Value.Type) {
@@ -286,9 +340,28 @@ namespace AspNet.Security.OAuth.Introspection {
 
             // Create a new authentication ticket containing the identity
             // built from the claims returned by the authorization server.
-            return Task.FromResult(new AuthenticationTicket(
-                new ClaimsPrincipal(identity), properties,
-                Options.AuthenticationScheme));
+            var ticket = new AuthenticationTicket(
+                new ClaimsPrincipal(identity),
+                properties, Options.AuthenticationScheme);
+
+            var notification = new CreateTicketContext(Context, Options, ticket, payload);
+            await Options.Events.CreateTicket(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                return null;
+            }
+
+            return notification.Ticket;
         }
 
         protected virtual Task StoreTicketAsync(string token, AuthenticationTicket ticket) {

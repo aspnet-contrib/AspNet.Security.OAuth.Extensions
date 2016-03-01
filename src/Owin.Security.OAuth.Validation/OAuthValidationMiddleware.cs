@@ -21,6 +21,10 @@ namespace Owin.Security.OAuth.Validation {
             [NotNull] IAppBuilder app,
             [NotNull] OAuthValidationOptions options)
             : base(next, options) {
+            if (Options.Events == null) {
+                Options.Events = new OAuthValidationEvents();
+            }
+
             if (options.DataProtectionProvider == null) {
                 // Create a new DI container and register
                 // the data protection services.

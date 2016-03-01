@@ -21,6 +21,10 @@ namespace AspNet.Security.OAuth.Validation {
             [NotNull] UrlEncoder encoder,
             [NotNull] IDataProtectionProvider dataProtectionProvider)
             : base(next, options, loggerFactory, encoder) {
+            if (Options.Events == null) {
+                Options.Events = new OAuthValidationEvents();
+            }
+
             if (Options.DataProtectionProvider == null) {
                 Options.DataProtectionProvider = dataProtectionProvider;
             }

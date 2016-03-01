@@ -22,28 +22,56 @@ using Newtonsoft.Json.Linq;
 namespace Owin.Security.OAuth.Introspection {
     public class OAuthIntrospectionHandler : AuthenticationHandler<OAuthIntrospectionOptions> {
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync() {
-            var header = Request.Headers.Get("Authorization");
-            if (string.IsNullOrEmpty(header)) {
-                Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+            var context = new RetrieveTokenContext(Context, Options);
+            await Options.Events.RetrieveToken(context);
+
+            if (context.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (context.Ticket == null) {
+                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+
+                    return null;
+                }
+
+                return context.Ticket;
+            }
+
+            else if (context.Skipped) {
+                Options.Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
 
-            // Ensure that the authorization header contains the mandatory "Bearer" scheme.
-            // See https://tools.ietf.org/html/rfc6750#section-2.1
-            if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                              "scheme was used in the 'Authorization' header.");
+            var token = context.Token;
 
-                return null;
-            }
+            if (string.IsNullOrEmpty(token)) {
+                // Try to retrieve the access token from the authorization header.
+                var header = Request.Headers[OAuthIntrospectionConstants.Headers.Authorization];
+                if (string.IsNullOrEmpty(header)) {
+                    Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
 
-            var token = header.Substring("Bearer ".Length);
-            if (string.IsNullOrWhiteSpace(token)) {
-                Options.Logger.LogError("Authentication failed because the bearer token " +
-                                        "was missing from the 'Authorization' header.");
+                    return null;
+                }
 
-                return null;
+                // Ensure that the authorization header contains the mandatory "Bearer" scheme.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1
+                if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
+                    Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                                  "scheme was used in the 'Authorization' header.");
+
+                    return null;
+                }
+
+                // Extract the token from the authorization header.
+                token = header.Substring("Bearer ".Length).Trim();
+
+                if (string.IsNullOrEmpty(token)) {
+                    Options.Logger.LogInformation("Authentication was skipped because the bearer token " +
+                                                  "was missing from the 'Authorization' header.");
+
+                    return null;
+                }
             }
 
             // Try to resolve the authentication ticket from the distributed cache. If none
@@ -56,15 +84,6 @@ namespace Owin.Security.OAuth.Introspection {
                 if (payload == null || !payload.Value<bool>(OAuthIntrospectionConstants.Claims.Active)) {
                     Options.Logger.LogError("Authentication failed because the authorization " +
                                             "server rejected the access token.");
-
-                    return null;
-                }
-
-                // Ensure that the access token was issued
-                // to be used with this resource server.
-                if (!await ValidateAudienceAsync(payload)) {
-                    Options.Logger.LogError("Authentication failed because the access token " +
-                                            "was not valid for this resource server.");
 
                     return null;
                 }
@@ -85,7 +104,39 @@ namespace Owin.Security.OAuth.Introspection {
                 return null;
             }
 
-            return ticket;
+            // Ensure that the access token was issued
+            // to be used with this resource server.
+            if (!ValidateAudience(ticket)) {
+                Options.Logger.LogError("Authentication failed because the access token " +
+                                        "was not valid for this resource server.");
+
+                return null;
+            }
+
+            var notification = new ValidateTokenContext(Context, Options, ticket);
+            await Options.Events.ValidateToken(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                Options.Logger.LogInformation("Authentication was skipped by application code.");
+
+                return null;
+            }
+
+            // Allow the application code to replace the ticket
+            // reference from the ValidateToken event.
+            return notification.Ticket;
         }
 
         protected virtual async Task<string> ResolveIntrospectionEndpointAsync(string issuer) {
@@ -142,6 +193,9 @@ namespace Owin.Security.OAuth.Introspection {
                 [OAuthIntrospectionConstants.Parameters.TokenTypeHint] = OAuthIntrospectionConstants.TokenTypes.AccessToken
             });
 
+            var notification = new RequestTokenIntrospectionContext(Context, Options, request, token);
+            await Options.Events.RequestTokenIntrospection(notification);
+
             var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Request.CallCancelled);
             if (!response.IsSuccessStatusCode) {
                 Options.Logger.LogError("An error occurred when validating an access token: the remote server " +
@@ -156,51 +210,28 @@ namespace Owin.Security.OAuth.Introspection {
             return JObject.Parse(await response.Content.ReadAsStringAsync());
         }
 
-        protected virtual Task<bool> ValidateAudienceAsync(JObject payload) {
+        protected virtual bool ValidateAudience(AuthenticationTicket ticket) {
             // If no explicit audience has been configured,
             // skip the default audience validation.
             if (Options.Audiences.Count == 0) {
-                return Task.FromResult(true);
+                return true;
             }
 
-            // If no "aud" claim was returned by the authorization server,
-            // assume the access token was not specific enough and reject it.
-            if (payload[OAuthIntrospectionConstants.Claims.Audience] == null) {
-                return Task.FromResult(false);
+            string audiences;
+            // Extract the audiences from the authentication ticket.
+            if (!ticket.Properties.Dictionary.TryGetValue(OAuthIntrospectionConstants.Properties.Audiences, out audiences)) {
+                return false;
             }
 
-            // Note: the "aud" claim can be either a string or an array.
-            // See https://tools.ietf.org/html/rfc7662#section-2.2
-            switch (payload[OAuthIntrospectionConstants.Claims.Audience].Type) {
-                case JTokenType.Array: {
-                    // When the "aud" claim is an array, at least one value must correspond
-                    // to the audience registered in the introspection middleware options.
-                    var audiences = payload.Value<JArray>(OAuthIntrospectionConstants.Claims.Audience)
-                                           .Select(audience => audience.Value<string>());
-                    if (audiences.Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
-                        return Task.FromResult(true);
-                    }
-
-                    return Task.FromResult(false);
-                }
-
-                case JTokenType.String: {
-                    // When the "aud" claim is a string, it must exactly match the
-                    // audience registered in the introspection middleware options.
-                    var audience = payload.Value<string>(OAuthIntrospectionConstants.Claims.Audience);
-                    if (Options.Audiences.Contains(audience, StringComparer.Ordinal)) {
-                        return Task.FromResult(true);
-                    }
-
-                    return Task.FromResult(false);
-                }
-
-                default:
-                    return Task.FromResult(false);
+            // Ensure that the authentication ticket contains at least one of the registered audiences.
+            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+                return false;
             }
+
+            return true;
         }
 
-        protected virtual Task<AuthenticationTicket> CreateTicketAsync(JObject payload) {
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(JObject payload) {
             var identity = new ClaimsIdentity(Options.AuthenticationType);
             var properties = new AuthenticationProperties();
 
@@ -250,6 +281,25 @@ namespace Owin.Security.OAuth.Introspection {
 
                         continue;
                     }
+
+                    // Store the audience(s) in the ticket properties.
+                    case OAuthIntrospectionConstants.Claims.Audience: {
+                        if (property.Value.Type == JTokenType.Array) {
+                            var value = (JArray) property.Value;
+                            if (value == null) {
+                                continue;
+                            }
+
+                            var audiences = string.Join(" ", value.Select(item => item.Value<string>()));
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = audiences;
+                        }
+
+                        else if (property.Value.Type == JTokenType.String) {
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = (string) property.Value;
+                        }
+
+                        continue;
+                    }
                 }
 
                 switch (property.Value.Type) {
@@ -282,7 +332,26 @@ namespace Owin.Security.OAuth.Introspection {
 
             // Create a new authentication ticket containing the identity
             // built from the claims returned by the authorization server.
-            return Task.FromResult(new AuthenticationTicket(identity, properties));
+            var ticket = new AuthenticationTicket(identity, properties);
+
+            var notification = new CreateTicketContext(Context, Options, ticket, payload);
+            await Options.Events.CreateTicket(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                return null;
+            }
+
+            return notification.Ticket;
         }
 
         protected virtual Task StoreTicketAsync(string token, AuthenticationTicket ticket) {

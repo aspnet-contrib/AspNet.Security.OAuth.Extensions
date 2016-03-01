@@ -42,5 +42,12 @@ namespace AspNet.Security.OAuth.Validation {
         /// is directly retrieved from the dependency injection container.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
+
+        /// <summary>
+        /// Gets or sets the object provided by the application to process events raised by the authentication middleware.
+        /// The application may implement the interface fully, or it may create an instance of
+        /// <see cref="OAuthValidationEvents"/> and assign delegates only to the events it wants to process.
+        /// </summary>
+        public IOAuthValidationEvents Events { get; set; } = new OAuthValidationEvents();
     }
 }

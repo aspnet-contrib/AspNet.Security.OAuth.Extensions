@@ -14,33 +14,61 @@ using Microsoft.Owin.Security.Infrastructure;
 namespace Owin.Security.OAuth.Validation {
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions> {
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync() {
-            var header = Request.Headers.Get("Authorization");
-            if (string.IsNullOrEmpty(header)) {
-                Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+            var context = new RetrieveTokenContext(Context, Options);
+            await Options.Events.RetrieveToken(context);
+
+            if (context.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (context.Ticket == null) {
+                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+
+                    return null;
+                }
+
+                return context.Ticket;
+            }
+
+            else if (context.Skipped) {
+                Options.Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
 
-            // Ensure that the authorization header contains the mandatory "Bearer" scheme.
-            // See https://tools.ietf.org/html/rfc6750#section-2.1
-            if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                              "scheme was used in the 'Authorization' header.");
+            var token = context.Token;
 
-                return null;
-            }
+            if (string.IsNullOrEmpty(token)) {
+                // Try to retrieve the access token from the authorization header.
+                var header = Request.Headers[OAuthValidationConstants.Headers.Authorization];
+                if (string.IsNullOrEmpty(header)) {
+                    Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
 
-            var token = header.Substring("Bearer ".Length);
-            if (string.IsNullOrWhiteSpace(token)) {
-                Options.Logger.LogError("Authentication failed because the bearer token " +
-                                        "was missing from the 'Authorization' header.");
+                    return null;
+                }
 
-                return null;
+                // Ensure that the authorization header contains the mandatory "Bearer" scheme.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1
+                if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
+                    Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                                  "scheme was used in the 'Authorization' header.");
+
+                    return null;
+                }
+
+                // Extract the token from the authorization header.
+                token = header.Substring("Bearer ".Length).Trim();
+
+                if (string.IsNullOrEmpty(token)) {
+                    Options.Logger.LogInformation("Authentication was skipped because the bearer token " +
+                                                  "was missing from the 'Authorization' header.");
+
+                    return null;
+                }
             }
 
             // Try to unprotect the token and return an error
             // if the ticket can't be decrypted or validated.
-            var ticket = Options.AccessTokenFormat.Unprotect(token);
+            var ticket = await CreateTicketAsync(token);
             if (ticket == null) {
                 Options.Logger.LogError("Authentication failed because the access token was invalid.");
 
@@ -49,7 +77,7 @@ namespace Owin.Security.OAuth.Validation {
 
             // Ensure that the access token was issued
             // to be used with this resource server.
-            if (!await ValidateAudienceAsync(ticket)) {
+            if (!ValidateAudience(ticket)) {
                 Options.Logger.LogError("Authentication failed because the access token " +
                                         "was not valid for this resource server.");
 
@@ -64,28 +92,74 @@ namespace Owin.Security.OAuth.Validation {
                 return null;
             }
 
-            return ticket;
+            var notification = new ValidateTokenContext(Context, Options, ticket);
+            await Options.Events.ValidateToken(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                Options.Logger.LogInformation("Authentication was skipped by application code.");
+
+                return null;
+            }
+
+            // Allow the application code to replace the ticket
+            // reference from the ValidateToken event.
+            return notification.Ticket;
         }
 
-        protected virtual Task<bool> ValidateAudienceAsync(AuthenticationTicket ticket) {
+        protected virtual bool ValidateAudience(AuthenticationTicket ticket) {
             // If no explicit audience has been configured,
             // skip the default audience validation.
             if (Options.Audiences.Count == 0) {
-                return Task.FromResult(true);
+                return true;
             }
 
-            // Extract the audiences from the authentication ticket.
             string audiences;
+            // Extract the audiences from the authentication ticket.
             if (!ticket.Properties.Dictionary.TryGetValue(OAuthValidationConstants.Properties.Audiences, out audiences)) {
-                return Task.FromResult(false);
+                return false;
             }
 
             // Ensure that the authentication ticket contains the registered audience.
-            if (!audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
-                return Task.FromResult(false);
+            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+                return false;
             }
 
-            return Task.FromResult(true);
+            return true;
+        }
+
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token) {
+            var ticket = Options.AccessTokenFormat.Unprotect(token);
+
+            var notification = new CreateTicketContext(Context, Options, ticket);
+            await Options.Events.CreateTicket(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                return null;
+            }
+
+            return notification.Ticket;
         }
     }
 }

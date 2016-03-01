@@ -34,6 +34,10 @@ namespace Owin.Security.OAuth.Introspection {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }
 
+            if (Options.Events == null) {
+                Options.Events = new OAuthIntrospectionEvents();
+            }
+
             if (options.DataProtectionProvider == null) {
                 // Create a new DI container and register
                 // the data protection services.

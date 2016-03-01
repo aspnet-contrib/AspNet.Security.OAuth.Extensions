@@ -14,38 +14,66 @@ using Microsoft.Net.Http.Headers;
 namespace AspNet.Security.OAuth.Validation {
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions> {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync() {
-            string header = Request.Headers[HeaderNames.Authorization];
-            if (string.IsNullOrEmpty(header)) {
-                Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+            var context = new RetrieveTokenContext(Context, Options);
+            await Options.Events.RetrieveToken(context);
+
+            if (context.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (context.Ticket == null) {
+                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
+                }
+
+                return AuthenticateResult.Success(context.Ticket);
+            }
+
+            else if (context.Skipped) {
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return AuthenticateResult.Skip();
             }
 
-            // Ensure that the authorization header contains the mandatory "Bearer" scheme.
-            // See https://tools.ietf.org/html/rfc6750#section-2.1
-            if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                      "scheme was used in the 'Authorization' header.");
+            var token = context.Token;
 
-                return AuthenticateResult.Skip();
-            }
+            if (string.IsNullOrEmpty(token)) {
+                // Try to retrieve the access token from the authorization header.
+                string header = Request.Headers[HeaderNames.Authorization];
+                if (string.IsNullOrEmpty(header)) {
+                    Logger.LogInformation("Authentication was skipped because no bearer token was received.");
 
-            var token = header.Substring("Bearer ".Length);
-            if (string.IsNullOrWhiteSpace(token)) {
-                return AuthenticateResult.Fail("Authentication failed because the bearer token " +
-                                               "was missing from the 'Authorization' header.");
+                    return AuthenticateResult.Skip();
+                }
+
+                // Ensure that the authorization header contains the mandatory "Bearer" scheme.
+                // See https://tools.ietf.org/html/rfc6750#section-2.1
+                if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
+                    Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                          "scheme was used in the 'Authorization' header.");
+
+                    return AuthenticateResult.Skip();
+                }
+
+                // Extract the token from the authorization header.
+                token = header.Substring("Bearer ".Length).Trim();
+
+                if (string.IsNullOrEmpty(token)) {
+                    Logger.LogInformation("Authentication was skipped because the bearer token " +
+                                          "was missing from the 'Authorization' header.");
+
+                    return AuthenticateResult.Skip();
+                }
             }
 
             // Try to unprotect the token and return an error
             // if the ticket can't be decrypted or validated.
-            var ticket = Options.AccessTokenFormat.Unprotect(token);
+            var ticket = await CreateTicketAsync(token);
             if (ticket == null) {
                 return AuthenticateResult.Fail("Authentication failed because the access token was invalid.");
             }
 
             // Ensure that the access token was issued
             // to be used with this resource server.
-            if (!await ValidateAudienceAsync(ticket)) {
+            if (!ValidateAudience(ticket)) {
                 return AuthenticateResult.Fail("Authentication failed because the access token " +
                                                "was not valid for this resource server.");
             }
@@ -56,28 +84,78 @@ namespace AspNet.Security.OAuth.Validation {
                 return AuthenticateResult.Fail("Authentication failed because the access token was expired.");
             }
 
+            var notification = new ValidateTokenContext(Context, Options, ticket);
+            await Options.Events.ValidateToken(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
+                }
+
+                return AuthenticateResult.Success(notification.Ticket);
+            }
+
+            else if (notification.Skipped) {
+                Logger.LogInformation("Authentication was skipped by application code.");
+
+                return AuthenticateResult.Skip();
+            }
+
+            // Allow the application code to replace the ticket
+            // reference from the ValidateToken event.
+            ticket = notification.Ticket;
+
+            if (ticket == null) {
+                return AuthenticateResult.Fail("Authentication was stopped by application code.");
+            }
+
             return AuthenticateResult.Success(ticket);
         }
 
-        protected virtual Task<bool> ValidateAudienceAsync(AuthenticationTicket ticket) {
+        protected virtual bool ValidateAudience(AuthenticationTicket ticket) {
             // If no explicit audience has been configured,
             // skip the default audience validation.
             if (Options.Audiences.Count == 0) {
-                return Task.FromResult(true);
+                return true;
             }
 
-            // Extract the audiences from the authentication ticket.
             string audiences;
+            // Extract the audiences from the authentication ticket.
             if (!ticket.Properties.Items.TryGetValue(OAuthValidationConstants.Properties.Audiences, out audiences)) {
-                return Task.FromResult(false);
+                return false;
             }
 
             // Ensure that the authentication ticket contains the registered audience.
-            if (!audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
-                return Task.FromResult(false);
+            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+                return false;
             }
 
-            return Task.FromResult(true);
+            return true;
+        }
+
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token) {
+            var ticket = Options.AccessTokenFormat.Unprotect(token);
+
+            var notification = new CreateTicketContext(Context, Options, ticket);
+            await Options.Events.CreateTicket(notification);
+
+            if (notification.HandledResponse) {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null) {
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped) {
+                return null;
+            }
+
+            return notification.Ticket;
         }
     }
 }

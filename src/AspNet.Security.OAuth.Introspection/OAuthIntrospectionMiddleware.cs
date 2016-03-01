@@ -35,6 +35,10 @@ namespace AspNet.Security.OAuth.Introspection {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }
 
+            if (Options.Events == null) {
+                Options.Events = new OAuthIntrospectionEvents();
+            }
+
             if (Options.DataProtectionProvider == null) {
                 Options.DataProtectionProvider = dataProtectionProvider;
             }
