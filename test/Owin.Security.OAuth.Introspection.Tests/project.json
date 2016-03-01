@@ -10,19 +10,19 @@
     },
 
     "dependencies": {
-        "Owin.Security.OAuth.Introspection": "1.0.0-*",
-
         "Microsoft.AspNet.Testing": "1.0.0-*",
+        "Microsoft.NETCore.Platforms": "1.0.1-*",
         "Microsoft.Owin.Testing": "3.0.1",
-
-        "xunit.runner.aspnet": "2.0.0-aspnet-*"
-    },
-
-    "commands": {
-        "test": "xunit.runner.aspnet"
+        "Owin.Security.OAuth.Introspection": "1.0.0-*",
+        "xunit": "2.1.0",
+        "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*"
     },
 
     "frameworks": {
         "dnx451": { }
+    },
+
+    "commands": {
+        "test": "xunit.runner.aspnet"
     }
 }

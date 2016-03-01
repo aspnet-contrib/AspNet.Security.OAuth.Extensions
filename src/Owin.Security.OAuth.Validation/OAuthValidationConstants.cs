@@ -7,7 +7,7 @@
 namespace Owin.Security.OAuth.Validation {
     public static class OAuthValidationConstants {
         public static class Properties {
-            public const string Audiences = "audiences";
+            public const string Audiences = ".audiences";
         }
     }
 }
