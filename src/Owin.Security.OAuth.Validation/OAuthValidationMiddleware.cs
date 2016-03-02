@@ -28,7 +28,7 @@ namespace Owin.Security.OAuth.Validation {
                 options.TicketFormat = new EnhancedTicketDataFormat(
                     app.CreateDataProtector(
                         "Owin.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware",
-                        "oidc-server", "Access_Token", "v1"));
+                        "ASOS", "Access_Token", "v1"));
             }
 
             if (options.Logger == null) {
