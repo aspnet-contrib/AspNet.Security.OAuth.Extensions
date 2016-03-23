@@ -1,34 +1,46 @@
 {
-    "version": "1.0.0-*",
-    "description": "OAuth2 introspection middleware for OWIN/Katana",
-    "authors": [ "Kévin Chalet" ],
-    "owners": [ "Kévin Chalet" ],
+  "version": "1.0.0-alpha1-*",
 
-    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
-    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+  "description": "OAuth2 introspection middleware for OWIN/Katana.",
+  "authors": [ "Kévin Chalet" ],
+  "owners": [ "Kévin Chalet" ],
 
-    "dependencies": {
-        "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
-        "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
-        "Microsoft.Owin.Security": "3.0.1",
-        "Newtonsoft.Json": "8.0.2"
-    },
+  "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
+  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-    "frameworks": {
-        "net451": {
-            "frameworkAssemblies": {
-                "System.Net.Http": "4.0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions"
+  },
 
-                "System.Runtime": {
-                    "type": "build",
-                    "version": "4.0.10.0"
-                },
+  "tags": [
+    "authentication",
+    "katana",
+    "jwt",
+    "openidconnect",
+    "owin",
+    "security"
+  ],
 
-                "System.Threading.Tasks": {
-                    "type": "build",
-                    "version": "4.0.0.0"
-                }
-            }
-        }
+  "compilationOptions": {
+    "nowarn": [ "CS1591" ],
+    "xmlDoc": true
+  },
+
+  "dependencies": {
+    "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
+    "Microsoft.Owin.Security": "3.0.1",
+    "Newtonsoft.Json": "8.0.2"
+  },
+
+  "frameworks": {
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Net.Http": "4.0.0.0",
+        "System.Runtime": { "type": "build", "version": "4.0.10.0" },
+        "System.Threading.Tasks": { "type": "build", "version": "4.0.0.0" }
+      }
     }
+  }
 }

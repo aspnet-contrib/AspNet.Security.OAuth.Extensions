@@ -1,30 +1,24 @@
 {
-    "authors": [ "Kévin Chalet" ],
-    "owners": [ "Kévin Chalet" ],
+  "compilationOptions": {
+    "warningsAsErrors": true
+  },
 
-    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
-    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+  "dependencies": {
+    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
+    "Microsoft.Owin.Testing": "3.0.1",
+    "Owin.Security.OAuth.Introspection": "1.0.0-*",
+    "xunit": "2.1.0",
+    "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*",
 
-    "compilationOptions": {
-        "warningsAsErrors": true
-    },
+    "System.Runtime": "4.1.0-*"
+  },
 
-    "dependencies": {
-        "Microsoft.AspNet.Testing": "1.0.0-*",
-        "Microsoft.NETCore.Platforms": "1.0.1-*",
-        "Microsoft.Owin.Testing": "3.0.1",
-        "Owin.Security.OAuth.Introspection": "1.0.0-*",
-        "xunit": "2.1.0",
-        "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*",
+  "frameworks": {
+    "dnx451": { }
+  },
 
-        "System.Runtime": "4.1.0-*"
-    },
-
-    "frameworks": {
-        "dnx451": { }
-    },
-
-    "commands": {
-        "test": "xunit.runner.aspnet"
-    }
+  "commands": {
+    "test": "xunit.runner.aspnet"
+  }
 }
