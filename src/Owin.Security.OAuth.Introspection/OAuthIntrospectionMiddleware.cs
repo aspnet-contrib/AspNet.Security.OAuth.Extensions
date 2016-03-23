@@ -27,7 +27,7 @@ namespace Owin.Security.OAuth.Introspection {
             }
 
             if (options.Cache == null) {
-                options.Cache = new LocalCache(new MemoryCache(new MemoryCacheOptions {
+                options.Cache = new MemoryDistributedCache(new MemoryCache(new MemoryCacheOptions {
                     CompactOnMemoryPressure = true
                 }));
             }
