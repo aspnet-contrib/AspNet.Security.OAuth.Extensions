@@ -8,11 +8,7 @@
     "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
     "dependencies": {
-        "Microsoft.Extensions.NotNullAttribute.Sources": {
-            "type": "build",
-            "version": "1.0.0-*"
-        },
-
+        "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
         "Microsoft.Owin.Security": "3.0.1"
     },
 

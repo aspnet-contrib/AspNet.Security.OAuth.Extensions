@@ -16,7 +16,9 @@
         "Moq": "4.2.1312.1622",
         "Owin.Security.OAuth.Validation": "1.0.0-*",
         "xunit": "2.1.0",
-        "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*"
+        "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*",
+
+        "System.Runtime": "4.1.0-*"
     },
 
     "frameworks": {

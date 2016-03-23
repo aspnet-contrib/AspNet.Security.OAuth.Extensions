@@ -5,7 +5,7 @@
  */
 
 using System;
-using Microsoft.Extensions.Internal;
+using JetBrains.Annotations;
 using Owin.Security.OAuth.Introspection;
 
 namespace Owin {
