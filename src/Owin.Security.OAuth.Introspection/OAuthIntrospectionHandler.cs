@@ -210,26 +210,15 @@ namespace Owin.Security.OAuth.Introspection {
                         continue;
 
                     case OAuthIntrospectionConstants.Claims.IssuedAt: {
-#if DNXCORE50
-                        // Convert the UNIX timestamp to a DateTimeOffset.
-                        properties.IssuedUtc = DateTimeOffset.FromUnixTimeSeconds((long) property.Value);
-#else
                         properties.IssuedUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
                                                TimeSpan.FromSeconds((long) property.Value);
-#endif
-
                         continue;
                     }
 
 
                     case OAuthIntrospectionConstants.Claims.ExpiresAt: {
-#if DNXCORE50
-                        // Convert the UNIX timestamp to a DateTimeOffset.
-                        properties.ExpiresUtc = DateTimeOffset.FromUnixTimeSeconds((long) property.Value);
-#else
                         properties.ExpiresUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
                                                 TimeSpan.FromSeconds((long) property.Value);
-#endif
 
                         continue;
                     }

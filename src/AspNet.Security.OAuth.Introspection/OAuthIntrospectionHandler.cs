@@ -203,7 +203,7 @@ namespace AspNet.Security.OAuth.Introspection {
                         continue;
 
                     case OAuthIntrospectionConstants.Claims.IssuedAt: {
-#if DNXCORE50
+#if NETSTANDARD1_3
                         // Convert the UNIX timestamp to a DateTimeOffset.
                         properties.IssuedUtc = DateTimeOffset.FromUnixTimeSeconds((long) property.Value);
 #else
@@ -216,7 +216,7 @@ namespace AspNet.Security.OAuth.Introspection {
 
 
                     case OAuthIntrospectionConstants.Claims.ExpiresAt: {
-#if DNXCORE50
+#if NETSTANDARD1_3
                         // Convert the UNIX timestamp to a DateTimeOffset.
                         properties.ExpiresUtc = DateTimeOffset.FromUnixTimeSeconds((long) property.Value);
 #else
