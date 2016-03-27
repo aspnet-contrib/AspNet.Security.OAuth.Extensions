@@ -4,21 +4,23 @@
   },
 
   "dependencies": {
-    "Microsoft.AspNet.Testing": "1.0.0-*",
+    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.Owin.Testing": "3.0.1",
     "Moq": "4.2.1312.1622",
     "Owin.Security.OAuth.Validation": "1.0.0-*",
     "xunit": "2.1.0",
-    "xunit.runner.aspnet": "2.0.0-aspnet-rc2-*",
+    "xunit.runner.console": "2.1.0",
 
     "System.Runtime": "4.1.0-*"
   },
 
   "frameworks": {
-    "dnx451": { }
+    "net451": {
+      "frameworkAssemblies": {
+        "System.Runtime": { "type": "build", "version": "4.0.10.0" }
+      }
+    }
   },
 
-  "commands": {
-    "test": "xunit.runner.aspnet"
-  }
+  "testRunner": "xunit"
 }

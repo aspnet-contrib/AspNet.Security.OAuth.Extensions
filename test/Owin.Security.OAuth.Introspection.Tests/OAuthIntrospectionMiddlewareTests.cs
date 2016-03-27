@@ -13,7 +13,7 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNet.Testing.xunit;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
