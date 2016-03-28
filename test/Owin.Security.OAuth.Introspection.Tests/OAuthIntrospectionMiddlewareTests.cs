@@ -13,7 +13,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
@@ -22,7 +21,7 @@ using Xunit;
 
 namespace Owin.Security.OAuth.Introspection.Tests {
     public class OAuthIntrospectionMiddlewareTests {
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void MissingAuthorityThrowsAnException() {
             // Arrange, act, assert
             var exception = Assert.Throws<TargetInvocationException>(() => CreateResourceServer(options => {
@@ -34,7 +33,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.StartsWith("The authority or the introspection endpoint must be configured.", exception.InnerException.Message);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void MissingCredentialsThrowAnException() {
             // Arrange, act, assert
             var exception = Assert.Throws<TargetInvocationException>(() => CreateResourceServer(options => {
@@ -46,7 +45,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.StartsWith("Client credentials must be configured.", exception.InnerException.Message);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task MissingTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -65,7 +64,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task InvalidTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -85,7 +84,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task ValidTokenAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -106,7 +105,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task MissingAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -127,7 +126,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task InvalidAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -149,7 +148,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task AnyMatchingAudienceCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -173,7 +172,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task ValidAudienceAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -196,7 +195,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task MultipleMatchingAudienceCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -220,7 +219,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
         }
 
-        [ConditionalFact, FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task ExpiredTicketCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {

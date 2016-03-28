@@ -5,7 +5,6 @@
 
   "dependencies": {
     "AspNet.Security.OAuth.Introspection": "1.0.0-*",
-    "Microsoft.AspNetCore.Testing": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
