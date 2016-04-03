@@ -8,9 +8,7 @@
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
-    "xunit": "2.1.0",
-
-    "System.Runtime": "4.1.0-*"
+    "xunit": "2.1.0"
   },
 
   "frameworks": {
