@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace AspNet.Security.OAuth.Introspection {
@@ -62,9 +63,17 @@ namespace AspNet.Security.OAuth.Introspection {
         public ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>
-        /// Gets or sets the serializer used to serialize and deserialize
+        /// Gets or sets the data format used to serialize and deserialize
         /// the authenticated tickets stored in the distributed cache.
         /// </summary>
-        public IDataSerializer<AuthenticationTicket> TicketSerializer { get; set; } = new TicketSerializer();
+        public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data protection provider used to create the default
+        /// data protectors used by <see cref="OAuthIntrospectionMiddleware"/>.
+        /// When this property is set to <c>null</c>, the data protection provider
+        /// is directly retrieved from the dependency injection container.
+        /// </summary>
+        public IDataProtectionProvider DataProtectionProvider { get; set; }
     }
 }

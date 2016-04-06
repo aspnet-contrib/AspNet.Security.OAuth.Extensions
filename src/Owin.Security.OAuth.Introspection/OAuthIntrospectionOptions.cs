@@ -6,11 +6,11 @@
 
 using System.Collections.Generic;
 using System.Net.Http;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security;
-using Microsoft.Owin.Security.DataHandler.Serializer;
 
 namespace Owin.Security.OAuth.Introspection {
     public class OAuthIntrospectionOptions : AuthenticationOptions {
@@ -70,9 +70,15 @@ namespace Owin.Security.OAuth.Introspection {
         public ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>
-        /// Gets or sets the serializer used to serialize and deserialize
+        /// Gets or sets the data format used to serialize and deserialize
         /// the authenticated tickets stored in the distributed cache.
         /// </summary>
-        public IDataSerializer<AuthenticationTicket> TicketSerializer { get; set; } = new TicketSerializer();
+        public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data protection provider used to create the default
+        /// data protectors used by <see cref="OAuthIntrospectionMiddleware"/>.
+        /// </summary>
+        public IDataProtectionProvider DataProtectionProvider { get; set; }
     }
 }

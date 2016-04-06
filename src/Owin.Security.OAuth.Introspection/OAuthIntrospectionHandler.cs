@@ -286,7 +286,7 @@ namespace Owin.Security.OAuth.Introspection {
         }
 
         protected virtual Task StoreTicketAsync(string token, AuthenticationTicket ticket) {
-            var bytes = Options.TicketSerializer.Serialize(ticket);
+            var bytes = Encoding.UTF8.GetBytes(Options.AccessTokenFormat.Protect(ticket));
             Debug.Assert(bytes != null);
 
             return Options.Cache.SetAsync(token, bytes, new DistributedCacheEntryOptions {
@@ -302,7 +302,7 @@ namespace Owin.Security.OAuth.Introspection {
                 return null;
             }
 
-            return Options.TicketSerializer.Deserialize(bytes);
+            return Options.AccessTokenFormat.Unprotect(Encoding.UTF8.GetString(bytes));
         }
     }
 }
