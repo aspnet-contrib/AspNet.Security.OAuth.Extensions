@@ -223,7 +223,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
             return TestServer.Create(app => {
                 app.UseOAuthValidation(options => {
                     options.AuthenticationMode = AuthenticationMode.Active;
-                    options.TicketFormat = format.Object;
+                    options.AccessTokenFormat = format.Object;
 
                     // Run the configuration delegate
                     // registered by the unit tests.

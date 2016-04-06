@@ -29,13 +29,15 @@
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.2-eap" },
-    "Microsoft.Owin.Security": "3.0.1"
+    "Microsoft.Owin.Security.Interop": "1.0.0-*"
   },
 
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.IdentityModel": "4.0.0.0"
+        "System.ComponentModel": { "type": "build" },
+        "System.IdentityModel": "4.0.0.0",
+        "System.Runtime": { "type": "build" }
       }
     }
   }

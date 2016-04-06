@@ -243,7 +243,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 app.UseOAuthValidation(options => {
                     options.AutomaticAuthenticate = true;
                     options.AutomaticChallenge = true;
-                    options.TicketFormat = format.Object;
+                    options.AccessTokenFormat = format.Object;
 
                     // Run the configuration delegate
                     // registered by the unit tests.

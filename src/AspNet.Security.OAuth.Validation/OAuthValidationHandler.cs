@@ -36,7 +36,7 @@ namespace AspNet.Security.OAuth.Validation {
 
             // Try to unprotect the token and return an error
             // if the ticket can't be decrypted or validated.
-            var ticket = Options.TicketFormat.Unprotect(token);
+            var ticket = Options.AccessTokenFormat.Unprotect(token);
             if (ticket == null) {
                 return AuthenticateResult.Fail("Authentication failed because the access token was invalid.");
             }

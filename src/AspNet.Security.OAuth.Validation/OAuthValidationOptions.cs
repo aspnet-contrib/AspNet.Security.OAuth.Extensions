@@ -7,6 +7,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace AspNet.Security.OAuth.Validation {
     public class OAuthValidationOptions : AuthenticationOptions {
@@ -28,8 +29,16 @@ namespace AspNet.Security.OAuth.Validation {
 
         /// <summary>
         /// Gets or sets the data format used to unprotect the
-        /// authenticated tickets received by the validation middleware.
+        /// access tokens received by the validation middleware.
         /// </summary>
-        public ISecureDataFormat<AuthenticationTicket> TicketFormat { get; set; }
+        public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data protection provider used to create the default
+        /// data protectors used by <see cref="OAuthValidationMiddleware"/>.
+        /// When this property is set to <c>null</c>, the data protection provider
+        /// is directly retrieved from the dependency injection container.
+        /// </summary>
+        public IDataProtectionProvider DataProtectionProvider { get; set; }
     }
 }

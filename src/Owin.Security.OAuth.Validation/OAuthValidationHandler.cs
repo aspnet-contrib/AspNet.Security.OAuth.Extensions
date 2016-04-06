@@ -40,7 +40,7 @@ namespace Owin.Security.OAuth.Validation {
 
             // Try to unprotect the token and return an error
             // if the ticket can't be decrypted or validated.
-            var ticket = Options.TicketFormat.Unprotect(token);
+            var ticket = Options.AccessTokenFormat.Unprotect(token);
             if (ticket == null) {
                 Options.Logger.WriteWarning("Authentication failed because the access token was invalid.");
 

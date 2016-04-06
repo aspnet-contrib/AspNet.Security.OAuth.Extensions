@@ -5,6 +5,7 @@
  */
 
 using System.Collections.Generic;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security;
@@ -35,8 +36,14 @@ namespace Owin.Security.OAuth.Validation {
 
         /// <summary>
         /// Gets or sets the data format used to unprotect the
-        /// authenticated tickets received by the validation middleware.
+        /// access tokens received by the validation middleware.
         /// </summary>
-        public ISecureDataFormat<AuthenticationTicket> TicketFormat { get; set; }
+        public ISecureDataFormat<AuthenticationTicket> AccessTokenFormat { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data protection provider used to create the default
+        /// data protector used by <see cref="OAuthValidationMiddleware"/>.
+        /// </summary>
+        public IDataProtectionProvider DataProtectionProvider { get; set; }
     }
 }

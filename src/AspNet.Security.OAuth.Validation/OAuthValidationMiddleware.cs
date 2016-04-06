@@ -21,13 +21,16 @@ namespace AspNet.Security.OAuth.Validation {
             [NotNull] UrlEncoder encoder,
             [NotNull] IDataProtectionProvider dataProtectionProvider)
             : base(next, options, loggerFactory, encoder) {
-            if (Options.TicketFormat == null) {
-                // Note: the purposes of the default ticket
-                // format must match the values used by ASOS.
-                Options.TicketFormat = new TicketDataFormat(
-                    dataProtectionProvider.CreateProtector(
-                        "AspNet.Security.OpenIdConnect.Server.OpenIdConnectServerMiddleware",
-                        "ASOS", "Access_Token", "v1"));
+            if (Options.DataProtectionProvider == null) {
+                Options.DataProtectionProvider = dataProtectionProvider;
+            }
+
+            if (Options.AccessTokenFormat == null) {
+                // Note: the following purposes must match the values used by ASOS.
+                var protector = Options.DataProtectionProvider.CreateProtector(
+                    "OpenIdConnectServerMiddleware", "ASOS", "Access_Token", "v1");
+
+                Options.AccessTokenFormat = new TicketDataFormat(protector);
             }
         }
 
