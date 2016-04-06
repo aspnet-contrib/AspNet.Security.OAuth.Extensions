@@ -6,15 +6,19 @@
 
 using System;
 using System.Net.Http;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
-using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.Infrastructure;
 
 namespace Owin.Security.OAuth.Introspection {
     public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions> {
-        public OAuthIntrospectionMiddleware(OwinMiddleware next, IAppBuilder app, OAuthIntrospectionOptions options)
+        public OAuthIntrospectionMiddleware(
+            [NotNull] OwinMiddleware next,
+            [NotNull] IAppBuilder app,
+            [NotNull] OAuthIntrospectionOptions options)
             : base(next, options) {
             if (string.IsNullOrEmpty(options.Authority) &&
                 string.IsNullOrEmpty(options.IntrospectionEndpoint)) {
@@ -33,7 +37,7 @@ namespace Owin.Security.OAuth.Introspection {
             }
 
             if (options.Logger == null) {
-                options.Logger = app.CreateLogger<OAuthIntrospectionMiddleware>();
+                options.Logger = new LoggerFactory().CreateLogger<OAuthIntrospectionMiddleware>();
             }
 
             if (options.HttpClient == null) {

@@ -7,7 +7,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Owin.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
 
@@ -16,7 +16,7 @@ namespace Owin.Security.OAuth.Validation {
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync() {
             var header = Request.Headers.Get("Authorization");
             if (string.IsNullOrEmpty(header)) {
-                Options.Logger.WriteVerbose("Authentication was skipped because no bearer token was received.");
+                Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
 
                 return null;
             }
@@ -24,16 +24,16 @@ namespace Owin.Security.OAuth.Validation {
             // Ensure that the authorization header contains the mandatory "Bearer" scheme.
             // See https://tools.ietf.org/html/rfc6750#section-2.1
             if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                Options.Logger.WriteWarning("Authentication failed because an invalid scheme " +
-                                            "was used in the 'Authorization' header.");
+                Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                              "scheme was used in the 'Authorization' header.");
 
                 return null;
             }
 
             var token = header.Substring("Bearer ".Length);
             if (string.IsNullOrWhiteSpace(token)) {
-                Options.Logger.WriteWarning("Authentication failed because the bearer token " +
-                                            "was missing from the 'Authorization' header.");
+                Options.Logger.LogError("Authentication failed because the bearer token " +
+                                        "was missing from the 'Authorization' header.");
 
                 return null;
             }
@@ -42,7 +42,7 @@ namespace Owin.Security.OAuth.Validation {
             // if the ticket can't be decrypted or validated.
             var ticket = Options.AccessTokenFormat.Unprotect(token);
             if (ticket == null) {
-                Options.Logger.WriteWarning("Authentication failed because the access token was invalid.");
+                Options.Logger.LogError("Authentication failed because the access token was invalid.");
 
                 return null;
             }
@@ -50,8 +50,8 @@ namespace Owin.Security.OAuth.Validation {
             // Ensure that the access token was issued
             // to be used with this resource server.
             if (!await ValidateAudienceAsync(ticket)) {
-                Options.Logger.WriteWarning("Authentication failed because the access token " +
-                                            "was not valid for this resource server.");
+                Options.Logger.LogError("Authentication failed because the access token " +
+                                        "was not valid for this resource server.");
 
                 return null;
             }
@@ -59,7 +59,7 @@ namespace Owin.Security.OAuth.Validation {
             // Ensure that the authentication ticket is still valid.
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow) {
-                Options.Logger.WriteWarning("Authentication failed because the access token was expired.");
+                Options.Logger.LogError("Authentication failed because the access token was expired.");
 
                 return null;
             }

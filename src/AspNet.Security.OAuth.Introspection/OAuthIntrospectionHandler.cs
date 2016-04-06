@@ -25,15 +25,18 @@ namespace AspNet.Security.OAuth.Introspection {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync() {
             string header = Request.Headers[HeaderNames.Authorization];
             if (string.IsNullOrEmpty(header)) {
-                return AuthenticateResult.Fail("Authentication failed because the bearer token " +
-                                               "was missing from the 'Authorization' header.");
+                Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+
+                return AuthenticateResult.Skip();
             }
 
             // Ensure that the authorization header contains the mandatory "Bearer" scheme.
             // See https://tools.ietf.org/html/rfc6750#section-2.1
             if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                return AuthenticateResult.Fail("Authentication failed because an invalid scheme " +
-                                               "was used in the 'Authorization' header.");
+                Logger.LogInformation("Authentication was skipped because an incompatible " +
+                                      "scheme was used in the 'Authorization' header.");
+
+                return AuthenticateResult.Skip();
             }
 
             var token = header.Substring("Bearer ".Length);

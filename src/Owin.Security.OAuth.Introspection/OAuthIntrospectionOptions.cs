@@ -7,8 +7,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Infrastructure;
-using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataHandler.Serializer;
 

@@ -6,8 +6,8 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Infrastructure;
-using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security;
 
 namespace Owin.Security.OAuth.Validation {

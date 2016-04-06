@@ -5,17 +5,21 @@
  */
 
 using System;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin;
 using Microsoft.Owin.BuilderProperties;
-using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.Infrastructure;
 using Microsoft.Owin.Security.Interop;
 
 namespace Owin.Security.OAuth.Validation {
     public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions> {
-        public OAuthValidationMiddleware(OwinMiddleware next, IAppBuilder app, OAuthValidationOptions options)
+        public OAuthValidationMiddleware(
+            [NotNull] OwinMiddleware next,
+            [NotNull] IAppBuilder app,
+            [NotNull] OAuthValidationOptions options)
             : base(next, options) {
             if (options.DataProtectionProvider == null) {
                 // Create a new DI container and register
@@ -51,7 +55,7 @@ namespace Owin.Security.OAuth.Validation {
             }
 
             if (options.Logger == null) {
-                options.Logger = app.CreateLogger<OAuthValidationMiddleware>();
+                options.Logger = new LoggerFactory().CreateLogger<OAuthValidationMiddleware>();
             }
         }
 
