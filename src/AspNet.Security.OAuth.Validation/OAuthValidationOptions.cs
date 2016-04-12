@@ -13,6 +13,8 @@ namespace AspNet.Security.OAuth.Validation {
     public class OAuthValidationOptions : AuthenticationOptions {
         public OAuthValidationOptions() {
             AuthenticationScheme = OAuthValidationDefaults.AuthenticationScheme;
+            AutomaticAuthenticate = true;
+            AutomaticChallenge = true;
         }
 
         /// <summary>

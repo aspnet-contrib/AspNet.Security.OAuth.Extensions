@@ -16,6 +16,7 @@ namespace Owin.Security.OAuth.Introspection {
     public class OAuthIntrospectionOptions : AuthenticationOptions {
         public OAuthIntrospectionOptions()
             : base(OAuthIntrospectionDefaults.AuthenticationScheme) {
+            AuthenticationMode = AuthenticationMode.Active;
         }
 
         /// <summary>

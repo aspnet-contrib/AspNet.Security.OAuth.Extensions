@@ -14,6 +14,7 @@ namespace Owin.Security.OAuth.Validation {
     public class OAuthValidationOptions : AuthenticationOptions {
         public OAuthValidationOptions()
             : base(OAuthValidationDefaults.AuthenticationScheme) {
+            AuthenticationMode = AuthenticationMode.Active;
         }
 
         /// <summary>
