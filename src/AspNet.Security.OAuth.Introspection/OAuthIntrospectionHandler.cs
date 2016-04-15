@@ -87,7 +87,7 @@ namespace AspNet.Security.OAuth.Introspection {
 
                 // Create a new authentication ticket from the introspection
                 // response returned by the authorization server.
-                ticket = await CreateTicketAsync(payload);
+                ticket = await CreateTicketAsync(token, payload);
                 Debug.Assert(ticket != null);
 
                 await StoreTicketAsync(token, ticket);
@@ -228,9 +228,16 @@ namespace AspNet.Security.OAuth.Introspection {
             return true;
         }
 
-        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(JObject payload) {
+        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload) {
             var identity = new ClaimsIdentity(Options.AuthenticationScheme);
             var properties = new AuthenticationProperties();
+
+            if (Options.SaveToken) {
+                // Store the access token in the authentication ticket.
+                properties.StoreTokens(new[] {
+                    new AuthenticationToken { Name = OAuthIntrospectionConstants.Properties.Token, Value = token }
+                });
+            }
 
             foreach (var property in payload.Properties()) {
                 switch (property.Name) {
@@ -283,7 +290,12 @@ namespace AspNet.Security.OAuth.Introspection {
                     // "scope" claim and store them as individual claims.
                     // See https://tools.ietf.org/html/rfc7662#section-2.2
                     case OAuthIntrospectionConstants.Claims.Scope: {
-                        foreach (var scope in property.Value.ToObject<string>().Split(' ')) {
+                        var scopes = (string) property.Value;
+
+                        // Store the scopes list as-is in the authentication properties.
+                        properties.Items[OAuthIntrospectionConstants.Properties.Scopes] = scopes;
+
+                        foreach (var scope in scopes.Split(' ')) {
                             identity.AddClaim(new Claim(property.Name, scope));
                         }
 
@@ -291,6 +303,8 @@ namespace AspNet.Security.OAuth.Introspection {
                     }
 
                     // Store the audience(s) in the ticket properties.
+                    // Note: the "aud" claim may be either a list of strings or a unique string.
+                    // See https://tools.ietf.org/html/rfc7662#section-2.2
                     case OAuthIntrospectionConstants.Claims.Audience: {
                         if (property.Value.Type == JTokenType.Array) {
                             var value = (JArray) property.Value;

@@ -240,6 +240,73 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
+        public async Task AuthenticationTicketContainsRequiredClaims() {
+            // Arrange
+            var server = CreateResourceServer(options => {
+                options.ClientId = "Fabrikam";
+                options.ClientSecret = "B4657E03-D619";
+            });
+
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-scopes");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var claims = from claim in ticket.Value<JArray>("Claims")
+                         select new {
+                             Type = claim.Value<string>(nameof(Claim.Type)),
+                             Value = claim.Value<string>(nameof(Claim.Value))
+                         };
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Contains(claims, claim => claim.Type == ClaimTypes.NameIdentifier &&
+                                             claim.Value == "Fabrikam");
+
+            Assert.Contains(claims, claim => claim.Type == OAuthIntrospectionConstants.Claims.Scope &&
+                                             claim.Value == "C54A8F5E-0387-43F4-BA43-FD4B50DC190D");
+
+            Assert.Contains(claims, claim => claim.Type == OAuthIntrospectionConstants.Claims.Scope &&
+                                             claim.Value == "5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7");
+        }
+
+        [Fact]
+        public async Task AuthenticationTicketContainsRequiredProperties() {
+            // Arrange
+            var server = CreateResourceServer(options => {
+                options.ClientId = "Fabrikam";
+                options.ClientSecret = "B4657E03-D619";
+                options.SaveToken = true;
+            });
+
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var properties = from claim in ticket.Value<JArray>("Properties")
+                             select new {
+                                 Name = claim.Value<string>("Name"),
+                                 Value = claim.Value<string>("Value")
+                             };
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Contains(properties, property => property.Name == "access_token" &&
+                                                    property.Value == "valid-token");
+        }
+
+        [Fact]
         public async Task InvalidReplacedTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
@@ -525,6 +592,26 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                     configuration?.Invoke(options);
                 });
 
+                app.Map("/ticket", map => map.Run(async context => {
+                    var ticket = await context.Authentication.AuthenticateAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
+                    if (ticket == null) {
+                        context.Authentication.Challenge();
+
+                        return;
+                    }
+
+                    context.Response.ContentType = "application/json";
+
+                    // Return the authentication ticket as a JSON object.
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                        Claims = from claim in ticket.Identity.Claims
+                                 select new { claim.Type, claim.Value },
+
+                        Properties = from property in ticket.Properties.Dictionary
+                                     select new { Name = property.Key, property.Value }
+                    }));
+                }));
+
                 app.Run(context => {
                     if (context.Authentication.User == null ||
                        !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated)) {
@@ -584,6 +671,15 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                             case "valid-token": {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
+
+                                break;
+                            }
+
+                            case "valid-token-with-scopes": {
+                                payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
+                                payload[OAuthIntrospectionConstants.Claims.Scope] =
+                                    "C54A8F5E-0387-43F4-BA43-FD4B50DC190D 5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7";
 
                                 break;
                             }

@@ -17,10 +17,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace AspNet.Security.OAuth.Validation.Tests {
@@ -175,6 +178,68 @@ namespace AspNet.Security.OAuth.Validation.Tests {
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AuthenticationTicketContainsRequiredClaims() {
+            // Arrange
+            var server = CreateResourceServer();
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-scopes");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var claims = from claim in ticket.Value<JArray>("Claims")
+                         select new {
+                             Type = claim.Value<string>(nameof(Claim.Type)),
+                             Value = claim.Value<string>(nameof(Claim.Value))
+                         };
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Contains(claims, claim => claim.Type == ClaimTypes.NameIdentifier &&
+                                             claim.Value == "Fabrikam");
+
+            Assert.Contains(claims, claim => claim.Type == OAuthValidationConstants.Claims.Scope &&
+                                             claim.Value == "C54A8F5E-0387-43F4-BA43-FD4B50DC190D");
+
+            Assert.Contains(claims, claim => claim.Type == OAuthValidationConstants.Claims.Scope &&
+                                             claim.Value == "5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7");
+        }
+
+        [Fact]
+        public async Task AuthenticationTicketContainsRequiredProperties() {
+            // Arrange
+            var server = CreateResourceServer(options => {
+                options.SaveToken = true;
+            });
+
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
+            var properties = from claim in ticket.Value<JArray>("Properties")
+                             select new {
+                                 Name = claim.Value<string>("Name"),
+                                 Value = claim.Value<string>("Value")
+                             };
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.Contains(properties, property => property.Name == ".Token.access_token" &&
+                                                    property.Value == "valid-token");
         }
 
         [Fact]
@@ -451,6 +516,19 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                           properties, OAuthValidationDefaults.AuthenticationScheme);
                   });
 
+            format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-scopes")))
+                  .Returns(delegate {
+                      var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
+                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+
+                      var properties = new AuthenticationProperties();
+                      properties.Items[OAuthValidationConstants.Properties.Scopes] =
+                        "C54A8F5E-0387-43F4-BA43-FD4B50DC190D 5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7";
+
+                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
+                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                  });
+
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-single-audience")))
                   .Returns(delegate {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
@@ -507,6 +585,28 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                     // registered by the unit tests.
                     configuration?.Invoke(options);
                 });
+
+                app.Map("/ticket", map => map.Run(async context => {
+                    var ticket = new AuthenticateContext(OAuthValidationDefaults.AuthenticationScheme);
+                    await context.Authentication.AuthenticateAsync(ticket);
+
+                    if (!ticket.Accepted || ticket.Principal == null || ticket.Properties == null) {
+                        await context.Authentication.ChallengeAsync();
+
+                        return;
+                    }
+
+                    context.Response.ContentType = "application/json";
+
+                    // Return the authentication ticket as a JSON object.
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                        Claims = from claim in ticket.Principal.Claims
+                                 select new { claim.Type, claim.Value },
+
+                        Properties = from property in ticket.Properties
+                                     select new { Name = property.Key, property.Value }
+                    }));
+                }));
 
                 app.Run(context => {
                     if (!context.User.Identities.Any(identity => identity.IsAuthenticated)) {

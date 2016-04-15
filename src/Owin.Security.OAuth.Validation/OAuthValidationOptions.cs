@@ -25,6 +25,12 @@ namespace Owin.Security.OAuth.Validation {
         public IList<string> Audiences { get; } = new List<string>();
 
         /// <summary>
+        /// Gets or sets a boolean determining whether the access token should be stored in the
+        /// <see cref="AuthenticationProperties"/> after a successful authentication process.
+        /// </summary>
+        public bool SaveToken { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the logger used by <see cref="OAuthValidationMiddleware"/>.
         /// When unassigned, a default instance is created using the logger factory.
         /// </summary>

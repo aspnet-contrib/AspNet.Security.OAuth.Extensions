@@ -9,6 +9,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace AspNet.Security.OAuth.Introspection {
@@ -46,6 +47,12 @@ namespace AspNet.Security.OAuth.Introspection {
         /// communicate with the introspection endpoint.
         /// </summary>
         public string ClientSecret { get; set; }
+
+        /// <summary>
+        /// Gets or sets a boolean determining whether the access token should be stored in the
+        /// <see cref="AuthenticationProperties"/> after a successful authentication process.
+        /// </summary>
+        public bool SaveToken { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the cache used to store the authentication tickets

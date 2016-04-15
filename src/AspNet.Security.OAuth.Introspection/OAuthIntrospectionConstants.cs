@@ -29,6 +29,8 @@ namespace AspNet.Security.OAuth.Introspection {
 
         public static class Properties {
             public const string Audiences = ".audiences";
+            public const string Scopes = ".scopes";
+            public const string Token = "access_token";
         }
 
         public static class TokenTypes {

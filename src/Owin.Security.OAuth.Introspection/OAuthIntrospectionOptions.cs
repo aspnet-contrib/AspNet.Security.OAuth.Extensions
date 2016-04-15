@@ -48,6 +48,12 @@ namespace Owin.Security.OAuth.Introspection {
         public string ClientSecret { get; set; }
 
         /// <summary>
+        /// Gets or sets a boolean determining whether the access token should be stored in the
+        /// <see cref="AuthenticationProperties"/> after a successful authentication process.
+        /// </summary>
+        public bool SaveToken { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets the cache used to store the authentication tickets
         /// resolved from the access tokens received by the resource server.
         /// </summary>

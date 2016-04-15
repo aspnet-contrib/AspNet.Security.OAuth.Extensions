@@ -5,7 +5,9 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -137,6 +139,28 @@ namespace AspNet.Security.OAuth.Validation {
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token) {
             var ticket = Options.AccessTokenFormat.Unprotect(token);
+            if (ticket == null) {
+                return null;
+            }
+
+            if (Options.SaveToken) {
+                // Store the access token in the authentication ticket.
+                ticket.Properties.StoreTokens(new[] {
+                    new AuthenticationToken { Name = OAuthValidationConstants.Properties.Token, Value = token }
+                });
+            }
+
+            var identity = ticket.Principal.Identity as ClaimsIdentity;
+            Debug.Assert(identity != null);
+
+            string scopes;
+            // Copy the scopes extracted from the authentication ticket to the
+            // ClaimsIdentity to make them easier to retrieve from application code.
+            if (ticket.Properties.Items.TryGetValue(OAuthValidationConstants.Properties.Scopes, out scopes)) {
+                foreach (var scope in scopes.Split(' ')) {
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Scope, scope));
+                }
+            }
 
             var notification = new CreateTicketContext(Context, Options, ticket);
             await Options.Events.CreateTicket(notification);

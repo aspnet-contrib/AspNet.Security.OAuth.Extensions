@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http.Authentication;
 
 namespace AspNet.Security.OAuth.Validation {
     public class OAuthValidationOptions : AuthenticationOptions {
@@ -23,6 +24,12 @@ namespace AspNet.Security.OAuth.Validation {
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
         public IList<string> Audiences { get; } = new List<string>();
+
+        /// <summary>
+        /// Gets or sets a boolean determining whether the access token should be stored in the
+        /// <see cref="AuthenticationProperties"/> after a successful authentication process.
+        /// </summary>
+        public bool SaveToken { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the clock used to determine the current date/time.
