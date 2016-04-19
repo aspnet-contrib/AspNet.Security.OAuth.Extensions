@@ -4,20 +4,20 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.Validation": "1.0.0-*",
-    "Microsoft.AspNetCore.TestHost": "1.0.0-*",
-    "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
-    "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
+    "AspNet.Security.OAuth.Validation": "1.0.0-alpha1-*",
+    "Microsoft.AspNetCore.TestHost": "1.0.0-rc2-*",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-*",
+    "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-*",
     "xunit": "2.1.0"
   },
 
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-dev-*",
-        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-*" },
-        "moq.netcore": "4.4.0-*",
-        "System.Diagnostics.TraceSource": "4.0.0-*"
+        "dotnet-test-xunit": "1.0.0-rc2-*",
+        "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-rc2-*" },
+        "moq.netcore": "4.4.0-beta8",
+        "System.Diagnostics.TraceSource": "4.0.0-rc2-*"
       },
 
       "imports": [
