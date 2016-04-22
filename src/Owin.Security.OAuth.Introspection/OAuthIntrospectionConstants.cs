@@ -14,6 +14,7 @@ namespace Owin.Security.OAuth.Introspection {
             public const string NotBefore = "nbf";
             public const string Scope = "scope";
             public const string Subject = "sub";
+            public const string TokenId = "jti";
             public const string TokenType = "token_type";
             public const string Username = "username";
         }
@@ -34,6 +35,7 @@ namespace Owin.Security.OAuth.Introspection {
         public static class Properties {
             public const string Audiences = ".audiences";
             public const string Scopes = ".scopes";
+            public const string TicketId = ".ticket_id";
             public const string Token = "access_token";
         }
 

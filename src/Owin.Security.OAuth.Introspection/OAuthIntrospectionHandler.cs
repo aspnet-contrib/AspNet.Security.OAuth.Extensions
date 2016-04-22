@@ -275,6 +275,13 @@ namespace Owin.Security.OAuth.Introspection {
 
                         continue;
                     }
+                        
+                    // Add the token identifier as a property on the authentication ticket.
+                    case OAuthIntrospectionConstants.Claims.TokenId: {
+                        properties.Dictionary[OAuthIntrospectionConstants.Properties.TicketId] = property.Value<string>();
+
+                        continue;
+                    }
 
                     // Extract the scope values from the space-delimited
                     // "scope" claim and store them as individual claims.
