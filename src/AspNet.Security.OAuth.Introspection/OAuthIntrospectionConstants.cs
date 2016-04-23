@@ -11,10 +11,10 @@ namespace AspNet.Security.OAuth.Introspection {
             public const string Audience = "aud";
             public const string ExpiresAt = "exp";
             public const string IssuedAt = "iat";
+            public const string JwtId = "jti";
             public const string NotBefore = "nbf";
             public const string Scope = "scope";
             public const string Subject = "sub";
-            public const string TokenId = "jti";
             public const string TokenType = "token_type";
             public const string Username = "username";
         }
