@@ -277,7 +277,7 @@ namespace Owin.Security.OAuth.Introspection {
                     }
                         
                     // Add the token identifier as a property on the authentication ticket.
-                    case OAuthIntrospectionConstants.Claims.TokenId: {
+                    case OAuthIntrospectionConstants.Claims.JwtId: {
                         properties.Dictionary[OAuthIntrospectionConstants.Properties.TicketId] = property.Value<string>();
 
                         continue;
