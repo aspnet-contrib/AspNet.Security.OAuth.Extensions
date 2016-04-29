@@ -288,7 +288,7 @@ namespace AspNet.Security.OAuth.Introspection {
 
                     // Add the token identifier as a property on the authentication ticket.
                     case OAuthIntrospectionConstants.Claims.JwtId: {
-                        properties.Items[OAuthIntrospectionConstants.Properties.TicketId] = property.Value<string>();
+                        properties.Items[OAuthIntrospectionConstants.Properties.TicketId] = (string) property;
 
                         continue;
                     }
