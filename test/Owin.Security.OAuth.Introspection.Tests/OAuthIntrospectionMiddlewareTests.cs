@@ -670,6 +670,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
                             case "valid-token": {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
 
                                 break;
@@ -677,6 +678,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
                             case "valid-token-with-scopes": {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
                                 payload[OAuthIntrospectionConstants.Claims.Scope] =
                                     "C54A8F5E-0387-43F4-BA43-FD4B50DC190D 5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7";
@@ -686,6 +688,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
                             case "valid-token-with-single-audience": {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
                                 payload[OAuthIntrospectionConstants.Claims.Audience] = "http://www.google.com/";
 
@@ -694,6 +697,7 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
                             case "valid-token-with-multiple-audiences": {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
                                 payload[OAuthIntrospectionConstants.Claims.Audience] = JArray.FromObject(new[] {
                                     "http://www.google.com/", "http://www.fabrikam.com/"

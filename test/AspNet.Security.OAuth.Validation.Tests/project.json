@@ -8,6 +8,7 @@
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-*",
+    "Newtonsoft.Json": "8.0.3",
     "xunit": "2.1.0"
   },
 
