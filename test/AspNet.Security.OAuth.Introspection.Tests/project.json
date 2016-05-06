@@ -5,6 +5,7 @@
 
   "dependencies": {
     "AspNet.Security.OAuth.Introspection": "1.0.0-alpha1-*",
+    "dotnet-test-xunit": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-rc2-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-*",
     "Microsoft.Extensions.Logging.Debug": "1.0.0-rc2-*",
@@ -14,7 +15,6 @@
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
-        "dotnet-test-xunit": "1.0.0-rc2-*",
         "Microsoft.NETCore.App": { "type": "platform", "version": "1.0.0-rc2-*" }
       },
 
@@ -24,11 +24,7 @@
       ]
     },
 
-    "net451": {
-      "dependencies": {
-        "xunit.runner.console": "2.1.0"
-      }
-    }
+    "net451": { }
   },
 
   "testRunner": "xunit"
