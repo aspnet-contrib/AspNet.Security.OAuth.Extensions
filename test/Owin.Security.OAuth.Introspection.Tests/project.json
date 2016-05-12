@@ -1,13 +1,14 @@
 {
-  "compilationOptions": {
+  "buildOptions": {
     "warningsAsErrors": true
   },
 
   "dependencies": {
+    "dotnet-test-xunit": "1.0.0-*",
+    "Microsoft.NETCore.Platforms": "1.0.1-*",
     "Microsoft.Owin.Testing": "3.0.1",
     "Owin.Security.OAuth.Introspection": "1.0.0-*",
-    "xunit": "2.1.0",
-    "xunit.runner.console": "2.1.0"
+    "xunit": "2.1.0"
   },
 
   "frameworks": {
