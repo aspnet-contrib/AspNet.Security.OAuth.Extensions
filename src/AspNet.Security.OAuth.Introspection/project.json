@@ -1,28 +1,31 @@
 {
   "version": "1.0.0-alpha1-*",
 
-  "description": "OAuth2 introspection middleware for ASP.NET Core.",
-  "authors": [ "Kévin Chalet" ],
-  "owners": [ "Kévin Chalet" ],
+  "packOptions": {
+    "description": "OAuth2 introspection middleware for ASP.NET Core.",
+    "authors": [ "Kévin Chalet" ],
+    "owners": [ "Kévin Chalet" ],
 
-  "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
-  "iconUrl": "https://avatars3.githubusercontent.com/u/7998081?s=64",
-  "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+    "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
+    "iconUrl": "https://avatars3.githubusercontent.com/u/7998081?s=64",
+    "licenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
 
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions"
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions"
+    },
+
+    "tags": [
+      "aspnetcore",
+      "authentication",
+      "jwt",
+      "openidconnect",
+      "security"
+    ]
   },
 
-  "tags": [
-    "aspnetcore",
-    "authentication",
-    "jwt",
-    "openidconnect",
-    "security"
-  ],
-
-  "compilationOptions": {
+  "buildOptions": {
+    "warningsAsErrors": true,
     "nowarn": [ "CS1591" ],
     "xmlDoc": true
   },
