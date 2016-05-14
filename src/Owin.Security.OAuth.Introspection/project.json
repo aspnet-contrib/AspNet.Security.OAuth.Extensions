@@ -42,10 +42,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.ComponentModel": { "type": "build" },
-        "System.Net.Http": "4.0.0.0",
-        "System.Runtime": { "type": "build" },
-        "System.Threading.Tasks": { "type": "build" }
+        "System.Net.Http": "4.0.0.0"
       }
     }
   }

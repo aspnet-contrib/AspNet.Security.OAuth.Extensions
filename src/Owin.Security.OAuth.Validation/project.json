@@ -40,9 +40,7 @@
   "frameworks": {
     "net451": {
       "frameworkAssemblies": {
-        "System.ComponentModel": { "type": "build" },
-        "System.IdentityModel": "4.0.0.0",
-        "System.Runtime": { "type": "build" }
+        "System.IdentityModel": "4.0.0.0"
       }
     }
   }
