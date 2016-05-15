@@ -4,7 +4,7 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.Validation": "1.0.0-*",
+    "AspNet.Security.OAuth.Validation": { "target": "project" },
     "dotnet-test-xunit": "1.0.0-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-*",
