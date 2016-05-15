@@ -9,7 +9,7 @@
     "Microsoft.Owin.Testing": "3.0.1",
     "Moq": "4.2.1312.1622",
     "Newtonsoft.Json": "8.0.3",
-    "Owin.Security.OAuth.Validation": "1.0.0-alpha1-*",
+    "Owin.Security.OAuth.Validation": { "target": "project" },
     "xunit": "2.1.0"
   },
 

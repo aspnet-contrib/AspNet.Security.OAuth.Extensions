@@ -7,7 +7,7 @@
     "dotnet-test-xunit": "1.0.0-rc2-*",
     "Microsoft.NETCore.Platforms": "1.0.1-rc2-*",
     "Microsoft.Owin.Testing": "3.0.1",
-    "Owin.Security.OAuth.Introspection": "1.0.0-alpha1-*",
+    "Owin.Security.OAuth.Introspection": { "target": "project" },
     "xunit": "2.1.0"
   },
 

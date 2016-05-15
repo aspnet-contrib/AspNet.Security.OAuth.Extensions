@@ -4,7 +4,7 @@
   },
 
   "dependencies": {
-    "AspNet.Security.OAuth.Introspection": "1.0.0-alpha1-*",
+    "AspNet.Security.OAuth.Introspection": { "target": "project" },
     "dotnet-test-xunit": "1.0.0-rc2-*",
     "Microsoft.AspNetCore.TestHost": "1.0.0-rc2-*",
     "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-*",
