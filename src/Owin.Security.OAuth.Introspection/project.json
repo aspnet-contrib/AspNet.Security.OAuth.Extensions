@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha1-*",
+  "version": "1.0.0-alpha1-final",
 
   "packOptions": {
     "description": "OAuth2 introspection middleware for OWIN/Katana.",
@@ -33,9 +33,9 @@
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-*",
-    "Microsoft.Extensions.Logging": "1.0.0-rc2-*",
-    "Microsoft.Owin.Security.Interop": "1.0.0-rc2-*",
+    "Microsoft.Extensions.Caching.Memory": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Logging": "1.0.0-rc2-final",
+    "Microsoft.Owin.Security.Interop": "1.0.0-rc2-final",
     "Newtonsoft.Json": "8.0.3"
   },
 

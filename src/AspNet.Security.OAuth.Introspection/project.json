@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-alpha1-*",
+  "version": "1.0.0-alpha1-final",
 
   "packOptions": {
     "description": "OAuth2 introspection middleware for ASP.NET Core.",
@@ -32,8 +32,8 @@
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.AspNetCore.Authentication": "1.0.0-rc2-*",
-    "Microsoft.Extensions.Caching.Abstractions": "1.0.0-rc2-*",
+    "Microsoft.AspNetCore.Authentication": "1.0.0-rc2-final",
+    "Microsoft.Extensions.Caching.Abstractions": "1.0.0-rc2-final",
     "Newtonsoft.Json": "8.0.3"
   },
 
@@ -42,7 +42,7 @@
 
     "netstandard1.3": {
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11-rc2-*"
+        "System.Dynamic.Runtime": "4.0.11-rc2-24027"
       },
 
       "imports": [
