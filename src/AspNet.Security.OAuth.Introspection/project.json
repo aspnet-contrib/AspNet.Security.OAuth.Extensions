@@ -1,9 +1,10 @@
 {
   "version": "1.0.0-alpha1-final",
 
+  "description": "OAuth2 introspection middleware for ASP.NET Core.",
+  "authors": [ "Kévin Chalet" ],
+
   "packOptions": {
-    "description": "OAuth2 introspection middleware for ASP.NET Core.",
-    "authors": [ "Kévin Chalet" ],
     "owners": [ "Kévin Chalet" ],
 
     "projectUrl": "https://github.com/aspnet-contrib/AspNet.Security.OAuth.Extensions",
