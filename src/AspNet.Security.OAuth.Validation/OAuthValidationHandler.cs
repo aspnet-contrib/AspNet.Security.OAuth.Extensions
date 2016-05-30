@@ -41,7 +41,7 @@ namespace AspNet.Security.OAuth.Validation {
                 // Try to retrieve the access token from the authorization header.
                 string header = Request.Headers[HeaderNames.Authorization];
                 if (string.IsNullOrEmpty(header)) {
-                    Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+                    Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
                     return AuthenticateResult.Skip();
                 }
@@ -49,8 +49,8 @@ namespace AspNet.Security.OAuth.Validation {
                 // Ensure that the authorization header contains the mandatory "Bearer" scheme.
                 // See https://tools.ietf.org/html/rfc6750#section-2.1
                 if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                    Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                          "scheme was used in the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because an incompatible " +
+                                    "scheme was used in the 'Authorization' header.");
 
                     return AuthenticateResult.Skip();
                 }
@@ -59,8 +59,8 @@ namespace AspNet.Security.OAuth.Validation {
                 token = header.Substring("Bearer ".Length).Trim();
 
                 if (string.IsNullOrEmpty(token)) {
-                    Logger.LogInformation("Authentication was skipped because the bearer token " +
-                                          "was missing from the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because the bearer token " +
+                                    "was missing from the 'Authorization' header.");
 
                     return AuthenticateResult.Skip();
                 }

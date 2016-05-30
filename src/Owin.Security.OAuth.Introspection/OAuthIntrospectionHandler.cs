@@ -49,7 +49,7 @@ namespace Owin.Security.OAuth.Introspection {
                 // Try to retrieve the access token from the authorization header.
                 var header = Request.Headers[OAuthIntrospectionConstants.Headers.Authorization];
                 if (string.IsNullOrEmpty(header)) {
-                    Options.Logger.LogInformation("Authentication was skipped because no bearer token was received.");
+                    Options.Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
                     return null;
                 }
@@ -57,8 +57,8 @@ namespace Owin.Security.OAuth.Introspection {
                 // Ensure that the authorization header contains the mandatory "Bearer" scheme.
                 // See https://tools.ietf.org/html/rfc6750#section-2.1
                 if (!header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)) {
-                    Options.Logger.LogInformation("Authentication was skipped because an incompatible " +
-                                                  "scheme was used in the 'Authorization' header.");
+                    Options.Logger.LogDebug("Authentication was skipped because an incompatible " +
+                                            "scheme was used in the 'Authorization' header.");
 
                     return null;
                 }
@@ -67,8 +67,8 @@ namespace Owin.Security.OAuth.Introspection {
                 token = header.Substring("Bearer ".Length).Trim();
 
                 if (string.IsNullOrEmpty(token)) {
-                    Options.Logger.LogInformation("Authentication was skipped because the bearer token " +
-                                                  "was missing from the 'Authorization' header.");
+                    Options.Logger.LogDebug("Authentication was skipped because the bearer token " +
+                                            "was missing from the 'Authorization' header.");
 
                     return null;
                 }
