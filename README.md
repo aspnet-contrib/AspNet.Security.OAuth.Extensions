@@ -5,8 +5,8 @@ AspNet.Security.OAuth.Extensions
 
 **The latest nightly builds can be found on [MyGet](https://www.myget.org/gallery/aspnet-contrib)**.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/aa7t5nfxpiri1e85/branch/release?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/aspnet-security-oauth-extensions/branch/release)
-[![Build status](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions.svg?branch=release)](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions)
+[![Build status](https://ci.appveyor.com/api/projects/status/aa7t5nfxpiri1e85/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/aspnet-security-oauth-extensions/branch/dev)
+[![Build status](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions.svg?branch=dev)](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions)
 
 ## Get started
 
