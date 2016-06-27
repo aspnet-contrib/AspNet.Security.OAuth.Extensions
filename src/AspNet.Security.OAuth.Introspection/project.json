@@ -33,8 +33,8 @@
 
   "dependencies": {
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
-    "Microsoft.AspNetCore.Authentication": "1.0.0-*",
-    "Microsoft.Extensions.Caching.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Authentication": "1.0.0",
+    "Microsoft.Extensions.Caching.Abstractions": "1.0.0",
     "Newtonsoft.Json": "9.0.1"
   },
 
@@ -43,7 +43,7 @@
 
     "netstandard1.3": {
       "dependencies": {
-        "System.Dynamic.Runtime": "4.0.11-*"
+        "System.Dynamic.Runtime": "4.0.11"
       },
 
       "imports": [
