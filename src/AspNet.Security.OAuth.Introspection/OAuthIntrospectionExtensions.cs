@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class OAuthIntrospectionExtensions
     {
         /// <summary>
-        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET 5 pipeline.
+        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="configuration">The delegate used to configure the introspection options.</param>
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET 5 pipeline.
+        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <param name="options">The options used to configure the introspection middleware.</param>

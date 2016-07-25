@@ -13,11 +13,37 @@ namespace AspNet.Security.OAuth.Validation
             public const string Scope = "scope";
         }
 
+        public static class Errors
+        {
+            public const string InsufficientScope = "insufficient_scope";
+            public const string InvalidRequest = "invalid_request";
+            public const string InvalidToken = "invalid_token";
+        }
+
+        public static class Parameters
+        {
+            public const string Error = "error";
+            public const string ErrorDescription = "error_description";
+            public const string ErrorUri = "error_uri";
+            public const string Realm = "realm";
+            public const string Scope = "scope";
+        }
+
         public static class Properties
         {
             public const string Audiences = ".audiences";
+            public const string Error = ".error";
+            public const string ErrorDescription = ".error_description";
+            public const string ErrorUri = ".error_uri";
+            public const string Realm = ".realm";
+            public const string Scope = ".scope";
             public const string Scopes = ".scopes";
             public const string Token = "access_token";
+        }
+
+        public static class Schemes
+        {
+            public const string Bearer = "Bearer";
         }
     }
 }

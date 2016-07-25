@@ -29,10 +29,23 @@ namespace AspNet.Security.OAuth.Validation
         public ISet<string> Audiences { get; } = new HashSet<string>();
 
         /// <summary>
+        /// Gets or sets the optional "realm" value returned to
+        /// the caller as part of the WWW-Authenticate header.
+        /// </summary>
+        public string Realm { get; set; }
+
+        /// <summary>
         /// Gets or sets a boolean determining whether the access token should be stored in the
         /// <see cref="AuthenticationProperties"/> after a successful authentication process.
         /// </summary>
         public bool SaveToken { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a boolean determining whether the token validation errors should be returned to the caller.
+        /// Enabled by default, this option can be disabled to prevent the validation middleware from returning
+        /// an error, an error_description and/or an error_uri in the WWW-Authenticate header.
+        /// </summary>
+        public bool IncludeErrorDetails { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the clock used to determine the current date/time.

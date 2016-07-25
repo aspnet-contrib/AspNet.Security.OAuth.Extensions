@@ -22,9 +22,17 @@ namespace Owin.Security.OAuth.Introspection
             public const string Username = "username";
         }
 
+        public static class Errors
+        {
+            public const string InsufficientScope = "insufficient_scope";
+            public const string InvalidRequest = "invalid_request";
+            public const string InvalidToken = "invalid_token";
+        }
+
         public static class Headers
         {
             public const string Authorization = "Authorization";
+            public const string WWWAuthenticate = "WWW-Authenticate";
         }
 
         public static class Metadata
@@ -34,6 +42,11 @@ namespace Owin.Security.OAuth.Introspection
 
         public static class Parameters
         {
+            public const string Error = "error";
+            public const string ErrorDescription = "error_description";
+            public const string ErrorUri = "error_uri";
+            public const string Realm = "realm";
+            public const string Scope = "scope";
             public const string Token = "token";
             public const string TokenTypeHint = "token_type_hint";
         }
@@ -41,9 +54,19 @@ namespace Owin.Security.OAuth.Introspection
         public static class Properties
         {
             public const string Audiences = ".audiences";
+            public const string Error = ".error";
+            public const string ErrorDescription = ".error_description";
+            public const string ErrorUri = ".error_uri";
+            public const string Realm = ".realm";
+            public const string Scope = ".scope";
             public const string Scopes = ".scopes";
             public const string TicketId = ".ticket_id";
             public const string Token = "access_token";
+        }
+
+        public static class Schemes
+        {
+            public const string Bearer = "Bearer";
         }
 
         public static class TokenTypes

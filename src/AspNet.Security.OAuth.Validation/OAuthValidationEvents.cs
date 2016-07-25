@@ -15,6 +15,11 @@ namespace AspNet.Security.OAuth.Validation
     public class OAuthValidationEvents
     {
         /// <summary>
+        /// Invoked when a challenge response is returned to the caller.
+        /// </summary>
+        public Func<ApplyChallengeContext, Task> OnApplyChallenge { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.
         /// </summary>
         public Func<CreateTicketContext, Task> OnCreateTicket { get; set; } = context => Task.FromResult(0);
@@ -28,6 +33,11 @@ namespace AspNet.Security.OAuth.Validation
         /// Invoked when a token is to be validated, before final processing.
         /// </summary>
         public Func<ValidateTokenContext, Task> OnValidateToken { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
+        /// Invoked when a challenge response is returned to the caller.
+        /// </summary>
+        public virtual Task ApplyChallenge(ApplyChallengeContext context) => OnApplyChallenge(context);
 
         /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.

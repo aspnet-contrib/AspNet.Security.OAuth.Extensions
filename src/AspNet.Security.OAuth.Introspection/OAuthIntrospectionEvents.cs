@@ -15,14 +15,14 @@ namespace AspNet.Security.OAuth.Introspection
     public class OAuthIntrospectionEvents
     {
         /// <summary>
+        /// Invoked when a challenge response is returned to the caller.
+        /// </summary>
+        public Func<ApplyChallengeContext, Task> OnApplyChallenge { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.
         /// </summary>
         public Func<CreateTicketContext, Task> OnCreateTicket { get; set; } = context => Task.FromResult(0);
-
-        /// <summary>
-        /// Invoked when a token is to be parsed from a newly-received request.
-        /// </summary>
-        public Func<RetrieveTokenContext, Task> OnRetrieveToken { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked when a token is to be sent to the authorization server for introspection.
@@ -30,9 +30,19 @@ namespace AspNet.Security.OAuth.Introspection
         public Func<RequestTokenIntrospectionContext, Task> OnRequestTokenIntrospection { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
+        /// Invoked when a token is to be parsed from a newly-received request.
+        /// </summary>
+        public Func<RetrieveTokenContext, Task> OnRetrieveToken { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
         /// Invoked when a token is to be validated, before final processing.
         /// </summary>
         public Func<ValidateTokenContext, Task> OnValidateToken { get; set; } = context => Task.FromResult(0);
+
+        /// <summary>
+        /// Invoked when a challenge response is returned to the caller.
+        /// </summary>
+        public virtual Task ApplyChallenge(ApplyChallengeContext context) => OnApplyChallenge(context);
 
         /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.
@@ -40,14 +50,14 @@ namespace AspNet.Security.OAuth.Introspection
         public virtual Task CreateTicket(CreateTicketContext context) => OnCreateTicket(context);
 
         /// <summary>
-        /// Invoked when a token is to be parsed from a newly-received request.
-        /// </summary>
-        public virtual Task RetrieveToken(RetrieveTokenContext context) => OnRetrieveToken(context);
-
-        /// <summary>
         /// Invoked when a token is to be sent to the authorization server for introspection.
         /// </summary>
         public virtual Task RequestTokenIntrospection(RequestTokenIntrospectionContext context) => OnRequestTokenIntrospection(context);
+
+        /// <summary>
+        /// Invoked when a token is to be parsed from a newly-received request.
+        /// </summary>
+        public virtual Task RetrieveToken(RetrieveTokenContext context) => OnRetrieveToken(context);
 
         /// <summary>
         /// Invoked when a token is to be validated, before final processing.
