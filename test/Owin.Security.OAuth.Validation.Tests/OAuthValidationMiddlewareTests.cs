@@ -239,12 +239,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task InvalidReplacedTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnRetrieveToken = context => {
-                        context.Token = "invalid-token";
+                options.Events.OnRetrieveToken = context => {
+                    context.Token = "invalid-token";
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -264,12 +262,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task ValidReplacedTokenCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnRetrieveToken = context => {
-                        context.Token = "valid-token";
+                options.Events.OnRetrieveToken = context => {
+                    context.Token = "valid-token";
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -290,12 +286,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnRetrieveToken = context => {
-                        context.SkipToNextMiddleware();
+                options.Events.OnRetrieveToken = context => {
+                    context.SkipToNextMiddleware();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -315,13 +309,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnRetrieveToken = context => {
-                        context.Ticket = null;
-                        context.HandleResponse();
+                options.Events.OnRetrieveToken = context => {
+                    context.Ticket = null;
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -341,17 +333,15 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnRetrieveToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                options.Events.OnRetrieveToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
 
-                        context.HandleResponse();
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -372,12 +362,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnValidateToken = context => {
-                        context.SkipToNextMiddleware();
+                options.Events.OnValidateToken = context => {
+                    context.SkipToNextMiddleware();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -397,13 +385,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnValidateToken = context => {
-                        context.Ticket = null;
-                        context.HandleResponse();
+                options.Events.OnValidateToken = context => {
+                    context.Ticket = null;
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -423,16 +409,14 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnValidateToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                options.Events.OnValidateToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
-                        context.HandleResponse();
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -453,16 +437,14 @@ namespace Owin.Security.OAuth.Validation.Tests {
         public async Task UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Events = new OAuthValidationEvents {
-                    OnValidateToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                options.Events.OnValidateToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
-                        context.HandleResponse();
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 

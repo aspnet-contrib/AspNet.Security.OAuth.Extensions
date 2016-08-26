@@ -55,6 +55,6 @@ namespace AspNet.Security.OAuth.Validation {
         /// The application may implement the interface fully, or it may create an instance of
         /// <see cref="OAuthValidationEvents"/> and assign delegates only to the events it wants to process.
         /// </summary>
-        public IOAuthValidationEvents Events { get; set; } = new OAuthValidationEvents();
+        public OAuthValidationEvents Events { get; set; } = new OAuthValidationEvents();
     }
 }

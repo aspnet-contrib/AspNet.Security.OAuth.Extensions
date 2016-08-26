@@ -11,7 +11,7 @@ namespace Owin.Security.OAuth.Validation {
     /// <summary>
     /// Allows customization of validation handling within the middleware.
     /// </summary>
-    public class OAuthValidationEvents : IOAuthValidationEvents {
+    public class OAuthValidationEvents {
         /// <summary>
         /// Invoked when a ticket is to be created from an access token.
         /// </summary>

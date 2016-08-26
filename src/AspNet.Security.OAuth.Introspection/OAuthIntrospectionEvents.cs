@@ -11,7 +11,7 @@ namespace AspNet.Security.OAuth.Introspection {
     /// <summary>
     /// Allows customization of introspection handling within the middleware.
     /// </summary>
-    public class OAuthIntrospectionEvents : IOAuthIntrospectionEvents {
+    public class OAuthIntrospectionEvents {
         /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.
         /// </summary>

@@ -313,12 +313,10 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnRetrieveToken = context => {
-                        context.Token = "invalid-token";
+                options.Events.OnRetrieveToken = context => {
+                    context.Token = "invalid-token";
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -341,12 +339,10 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnRetrieveToken = context => {
-                        context.Token = "valid-token";
+                options.Events.OnRetrieveToken = context => {
+                    context.Token = "valid-token";
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -370,12 +366,10 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnRetrieveToken = context => {
-                        context.SkipToNextMiddleware();
+                options.Events.OnRetrieveToken = context => {
+                    context.SkipToNextMiddleware();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -398,13 +392,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnRetrieveToken = context => {
-                        context.Ticket = null;
-                        context.HandleResponse();
+                options.Events.OnRetrieveToken = context => {
+                    context.Ticket = null;
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -427,17 +419,15 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnRetrieveToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                options.Events.OnRetrieveToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
 
-                        context.HandleResponse();
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -461,12 +451,10 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnValidateToken = context => {
-                        context.SkipToNextMiddleware();
+                options.Events.OnValidateToken = context => {
+                    context.SkipToNextMiddleware();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -489,13 +477,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnValidateToken = context => {
-                        context.Ticket = null;
-                        context.HandleResponse();
+                options.Events.OnValidateToken = context => {
+                    context.Ticket = null;
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -518,16 +504,14 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnValidateToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                options.Events.OnValidateToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
-                        context.HandleResponse();
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 
@@ -551,16 +535,14 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events = new OAuthIntrospectionEvents {
-                    OnValidateToken = context => {
-                        var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                options.Events.OnValidateToken = context => {
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
+                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                        context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
-                        context.HandleResponse();
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
+                    context.HandleResponse();
 
-                        return Task.FromResult(0);
-                    }
+                    return Task.FromResult(0);
                 };
             });
 

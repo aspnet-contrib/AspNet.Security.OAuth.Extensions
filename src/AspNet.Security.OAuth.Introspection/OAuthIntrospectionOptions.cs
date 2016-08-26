@@ -65,7 +65,7 @@ namespace AspNet.Security.OAuth.Introspection {
         /// The application may implement the interface fully, or it may create an instance of
         /// <see cref="OAuthIntrospectionEvents"/> and assign delegates only to the events it wants to process.
         /// </summary>
-        public IOAuthIntrospectionEvents Events { get; set; } = new OAuthIntrospectionEvents();
+        public OAuthIntrospectionEvents Events { get; set; } = new OAuthIntrospectionEvents();
 
         /// <summary>
         /// Gets or sets the HTTP client used to communicate
