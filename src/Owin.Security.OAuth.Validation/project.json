@@ -1,5 +1,5 @@
 ﻿{
-  "version": "1.0.0-alpha3-*",
+  "version": "1.0.0-beta1-*",
 
   "description": "OAuth2 validation middleware for OWIN/Katana.",
   "authors": [ "Kévin Chalet" ],
