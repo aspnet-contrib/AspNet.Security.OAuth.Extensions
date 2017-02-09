@@ -71,11 +71,11 @@ namespace Owin.Security.OAuth.Introspection {
 
             if (options.HttpClient == null) {
                 options.HttpClient = new HttpClient {
-                    Timeout = TimeSpan.FromSeconds(60),
+                    Timeout = TimeSpan.FromSeconds(15),
                     MaxResponseContentBufferSize = 1024 * 1024 * 10
                 };
 
-                options.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ASP.NET OAuth2 introspection middleware");
+                options.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OWIN OAuth2 introspection middleware");
             }
         }
 

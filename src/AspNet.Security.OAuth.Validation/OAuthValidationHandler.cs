@@ -5,13 +5,12 @@
  */
 
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json.Linq;
 
 namespace AspNet.Security.OAuth.Validation {
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions> {
@@ -129,12 +128,22 @@ namespace AspNet.Security.OAuth.Validation {
                 return false;
             }
 
-            // Ensure that the authentication ticket contains the registered audience.
-            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+            if (string.IsNullOrEmpty(audiences)) {
                 return false;
             }
 
-            return true;
+            // Ensure that the authentication ticket contains one of the registered audiences.
+            foreach (var audience in JArray.Parse(audiences).Values<string>()) {
+                if (string.IsNullOrEmpty(audience)) {
+                    continue;
+                }
+
+                if (Options.Audiences.Contains(audience)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token) {
@@ -150,14 +159,18 @@ namespace AspNet.Security.OAuth.Validation {
                 });
             }
 
-            var identity = ticket.Principal.Identity as ClaimsIdentity;
-            Debug.Assert(identity != null);
+            // Resolve the primary identity associated with the principal.
+            var identity = (ClaimsIdentity) ticket.Principal.Identity;
 
             string scopes;
             // Copy the scopes extracted from the authentication ticket to the
             // ClaimsIdentity to make them easier to retrieve from application code.
             if (ticket.Properties.Items.TryGetValue(OAuthValidationConstants.Properties.Scopes, out scopes)) {
-                foreach (var scope in scopes.Split(' ')) {
+                foreach (var scope in JArray.Parse(scopes).Values<string>()) {
+                    if (string.IsNullOrEmpty(scope)) {
+                        continue;
+                    }
+
                     identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Scope, scope));
                 }
             }

@@ -482,7 +482,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
 
                       var properties = new AuthenticationProperties();
                       properties.Dictionary[OAuthValidationConstants.Properties.Scopes] =
-                        "C54A8F5E-0387-43F4-BA43-FD4B50DC190D 5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7";
+                        @"[""C54A8F5E-0387-43F4-BA43-FD4B50DC190D"",""5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7""]";
 
                       return new AuthenticationTicket(identity, properties);
                   });
@@ -493,7 +493,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string> {
-                          [OAuthValidationConstants.Properties.Audiences] = "http://www.google.com/"
+                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/""]"
                       });
 
                       return new AuthenticationTicket(identity, properties);
@@ -505,7 +505,7 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string> {
-                          [OAuthValidationConstants.Properties.Audiences] = "http://www.google.com/ http://www.fabrikam.com/"
+                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/"",""http://www.fabrikam.com/""]"
                       });
 
                       return new AuthenticationTicket(identity, properties);

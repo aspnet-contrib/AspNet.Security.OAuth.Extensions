@@ -18,11 +18,11 @@ namespace Owin.Security.OAuth.Validation {
         }
 
         /// <summary>
-        /// Gets or sets the intended audiences of this resource server.
+        /// Gets the intended audiences of this resource server.
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
-        public IList<string> Audiences { get; } = new List<string>();
+        public ISet<string> Audiences { get; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets a boolean determining whether the access token should be stored in the

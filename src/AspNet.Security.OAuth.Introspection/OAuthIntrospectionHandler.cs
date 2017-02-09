@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -18,6 +17,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AspNet.Security.OAuth.Introspection {
@@ -220,12 +220,22 @@ namespace AspNet.Security.OAuth.Introspection {
                 return false;
             }
 
-            // Ensure that the authentication ticket contains at least one of the registered audiences.
-            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+            if (string.IsNullOrEmpty(audiences)) {
                 return false;
             }
 
-            return true;
+            // Ensure that the authentication ticket contains one of the registered audiences.
+            foreach (var audience in JArray.Parse(audiences).Values<string>()) {
+                if (string.IsNullOrEmpty(audience)) {
+                    continue;
+                }
+
+                if (Options.Audiences.Contains(audience)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload) {
@@ -258,7 +268,6 @@ namespace AspNet.Security.OAuth.Introspection {
 
                         continue;
                     }
-
 
                     case OAuthIntrospectionConstants.Claims.ExpiresAt: {
 #if NETSTANDARD1_3
@@ -299,8 +308,9 @@ namespace AspNet.Security.OAuth.Introspection {
                     case OAuthIntrospectionConstants.Claims.Scope: {
                         var scopes = (string) property.Value;
 
-                        // Store the scopes list as-is in the authentication properties.
-                        properties.Items[OAuthIntrospectionConstants.Properties.Scopes] = scopes;
+                        // Store the scopes list in the authentication properties.
+                        properties.Items[OAuthIntrospectionConstants.Properties.Scopes] =
+                            new JArray(scopes.Split(' ')).ToString(Formatting.None);
 
                         foreach (var scope in scopes.Split(' ')) {
                             identity.AddClaim(new Claim(property.Name, scope));
@@ -319,12 +329,12 @@ namespace AspNet.Security.OAuth.Introspection {
                                 continue;
                             }
 
-                            var audiences = string.Join(" ", value.Select(item => item.Value<string>()));
-                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] = audiences;
+                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] = value.ToString(Formatting.None);
                         }
 
                         else if (property.Value.Type == JTokenType.String) {
-                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] = (string) property.Value;
+                            properties.Items[OAuthIntrospectionConstants.Properties.Audiences] =
+                                new JArray((string) property.Value).ToString(Formatting.None);
                         }
 
                         continue;

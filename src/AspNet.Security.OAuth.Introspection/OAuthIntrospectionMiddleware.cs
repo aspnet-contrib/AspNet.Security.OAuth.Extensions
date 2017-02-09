@@ -57,11 +57,11 @@ namespace AspNet.Security.OAuth.Introspection {
 
             if (Options.HttpClient == null) {
                 Options.HttpClient = new HttpClient {
-                    Timeout = TimeSpan.FromSeconds(60),
+                    Timeout = TimeSpan.FromSeconds(15),
                     MaxResponseContentBufferSize = 1024 * 1024 * 10
                 };
 
-                Options.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ASP.NET OAuth2 introspection middleware");
+                Options.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("ASP.NET Core OAuth2 introspection middleware");
             }
         }
 

@@ -5,12 +5,12 @@
  */
 
 using System;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
+using Newtonsoft.Json.Linq;
 
 namespace Owin.Security.OAuth.Validation {
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions> {
@@ -132,12 +132,22 @@ namespace Owin.Security.OAuth.Validation {
                 return false;
             }
 
-            // Ensure that the authentication ticket contains the registered audience.
-            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+            if (string.IsNullOrEmpty(audiences)) {
                 return false;
             }
 
-            return true;
+            // Ensure that the authentication ticket contains one of the registered audiences.
+            foreach (var audience in JArray.Parse(audiences).Values<string>()) {
+                if (string.IsNullOrEmpty(audience)) {
+                    continue;
+                }
+
+                if (Options.Audiences.Contains(audience)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token) {
@@ -155,7 +165,11 @@ namespace Owin.Security.OAuth.Validation {
             // Copy the scopes extracted from the authentication ticket to the
             // ClaimsIdentity to make them easier to retrieve from application code.
             if (ticket.Properties.Dictionary.TryGetValue(OAuthValidationConstants.Properties.Scopes, out scopes)) {
-                foreach (var scope in scopes.Split(' ')) {
+                foreach (var scope in JArray.Parse(scopes).Values<string>()) {
+                    if (string.IsNullOrEmpty(scope)) {
+                        continue;
+                    }
+
                     ticket.Identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Scope, scope));
                 }
             }

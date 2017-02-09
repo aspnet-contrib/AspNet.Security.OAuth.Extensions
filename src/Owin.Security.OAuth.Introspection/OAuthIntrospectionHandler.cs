@@ -7,7 +7,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -17,6 +16,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Owin.Security.OAuth.Introspection {
@@ -223,12 +223,22 @@ namespace Owin.Security.OAuth.Introspection {
                 return false;
             }
 
-            // Ensure that the authentication ticket contains at least one of the registered audiences.
-            if (audiences == null || !audiences.Split(' ').Intersect(Options.Audiences, StringComparer.Ordinal).Any()) {
+            if (string.IsNullOrEmpty(audiences)) {
                 return false;
             }
 
-            return true;
+            // Ensure that the authentication ticket contains one of the registered audiences.
+            foreach (var audience in JArray.Parse(audiences).Values<string>()) {
+                if (string.IsNullOrEmpty(audience)) {
+                    continue;
+                }
+
+                if (Options.Audiences.Contains(audience)) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload) {
@@ -254,7 +264,6 @@ namespace Owin.Security.OAuth.Introspection {
                         continue;
                     }
 
-
                     case OAuthIntrospectionConstants.Claims.ExpiresAt: {
                         properties.ExpiresUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
                                                 TimeSpan.FromSeconds((long) property.Value);
@@ -275,7 +284,7 @@ namespace Owin.Security.OAuth.Introspection {
 
                         continue;
                     }
-                        
+
                     // Add the token identifier as a property on the authentication ticket.
                     case OAuthIntrospectionConstants.Claims.JwtId: {
                         properties.Dictionary[OAuthIntrospectionConstants.Properties.TicketId] = (string) property;
@@ -289,8 +298,9 @@ namespace Owin.Security.OAuth.Introspection {
                     case OAuthIntrospectionConstants.Claims.Scope: {
                         var scopes = (string) property.Value;
 
-                        // Store the scopes list as-is in the authentication properties.
-                        properties.Dictionary[OAuthIntrospectionConstants.Properties.Scopes] = scopes;
+                        // Store the scopes list in the authentication properties.
+                        properties.Dictionary[OAuthIntrospectionConstants.Properties.Scopes] =
+                            new JArray(scopes.Split(' ')).ToString(Formatting.None);
 
                         foreach (var scope in scopes.Split(' ')) {
                             identity.AddClaim(new Claim(property.Name, scope));
@@ -309,12 +319,12 @@ namespace Owin.Security.OAuth.Introspection {
                                 continue;
                             }
 
-                            var audiences = string.Join(" ", value.Select(item => item.Value<string>()));
-                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = audiences;
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = value.ToString(Formatting.None);
                         }
 
                         else if (property.Value.Type == JTokenType.String) {
-                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = (string) property.Value;
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] =
+                                new JArray((string) property.Value).ToString(Formatting.None);
                         }
 
                         continue;

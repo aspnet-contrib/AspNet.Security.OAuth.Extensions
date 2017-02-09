@@ -17,7 +17,7 @@ namespace Owin.Security.OAuth.Introspection {
         public ValidateTokenContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthIntrospectionOptions options,
-            [NotNull] AuthenticationTicket ticket) 
+            [NotNull] AuthenticationTicket ticket)
             : base(context, options) {
             Ticket = ticket;
         }

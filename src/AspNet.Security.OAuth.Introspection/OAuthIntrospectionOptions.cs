@@ -21,11 +21,11 @@ namespace AspNet.Security.OAuth.Introspection {
         }
 
         /// <summary>
-        /// Gets or sets the intended audiences of this resource server.
+        /// Gets the intended audiences of this resource server.
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
-        public IList<string> Audiences { get; } = new List<string>();
+        public ISet<string> Audiences { get; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets the base address of the OAuth2/OpenID Connect server.
@@ -71,7 +71,7 @@ namespace AspNet.Security.OAuth.Introspection {
         /// Gets or sets the HTTP client used to communicate
         /// with the remote OAuth2/OpenID Connect server.
         /// </summary>
-        public HttpClient HttpClient { get; set; } = new HttpClient();
+        public HttpClient HttpClient { get; set; }
 
         /// <summary>
         /// Gets or sets the clock used to determine the current date/time.

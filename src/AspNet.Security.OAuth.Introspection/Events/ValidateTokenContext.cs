@@ -16,7 +16,7 @@ namespace AspNet.Security.OAuth.Introspection {
         public ValidateTokenContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options,
-            [NotNull] AuthenticationTicket ticket) 
+            [NotNull] AuthenticationTicket ticket)
             : base(context) {
             Options = options;
             Ticket = ticket;
