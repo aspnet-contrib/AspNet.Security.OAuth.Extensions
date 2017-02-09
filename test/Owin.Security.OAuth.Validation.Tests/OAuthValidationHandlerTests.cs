@@ -12,28 +12,22 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Owin.Security;
+using Microsoft.Owin.Testing;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace AspNet.Security.OAuth.Validation.Tests {
-    public class OAuthValidationMiddlewareTests {
+namespace Owin.Security.OAuth.Validation.Tests {
+    public class OAuthValidationHandlerTests {
         [Fact]
-        public async Task InvalidTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer();
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-token");
@@ -46,11 +40,11 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ValidTokenAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidTokenAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer();
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -64,13 +58,13 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task MissingAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -83,13 +77,13 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task InvalidAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidAudienceCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-single-audience");
@@ -102,13 +96,13 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ValidAudienceAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidAudienceAllowsSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-multiple-audiences");
@@ -122,14 +116,14 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AnyMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_AnyMatchingAudienceCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
-                options.Audiences.Add("http://www.unknown.com/");
+                options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-single-audience");
@@ -143,14 +137,14 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task MultipleMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_MultipleMatchingAudienceCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-multiple-audiences");
@@ -164,11 +158,11 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ExpiredTicketCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer();
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "expired-token");
@@ -181,11 +175,11 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticationTicketContainsRequiredClaims() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredClaims() {
             // Arrange
             var server = CreateResourceServer();
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-with-scopes");
@@ -214,13 +208,13 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticationTicketContainsRequiredProperties() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredProperties() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.SaveToken = true;
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/ticket");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -238,12 +232,12 @@ namespace AspNet.Security.OAuth.Validation.Tests {
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            Assert.Contains(properties, property => property.Name == ".Token.access_token" &&
+            Assert.Contains(properties, property => property.Name == "access_token" &&
                                                     property.Value == "valid-token");
         }
 
         [Fact]
-        public async Task InvalidReplacedTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidReplacedTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnRetrieveToken = context => {
@@ -253,7 +247,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -266,7 +260,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ValidReplacedTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidReplacedTokenCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnRetrieveToken = context => {
@@ -276,7 +270,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-token");
@@ -290,7 +284,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnRetrieveToken = context => {
@@ -300,7 +294,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -313,7 +307,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnRetrieveToken = context => {
@@ -324,7 +318,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -337,17 +331,14 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnRetrieveToken = context => {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
 
                     context.HandleResponse();
 
@@ -355,7 +346,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "invalid-token");
@@ -369,7 +360,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnValidateToken = context => {
@@ -379,7 +370,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -392,7 +383,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnValidateToken = context => {
@@ -403,7 +394,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -416,25 +407,21 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnValidateToken = context => {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
-
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
 
                     return Task.FromResult(0);
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -448,25 +435,21 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication() {
             // Arrange
             var server = CreateResourceServer(options => {
                 options.Events.OnValidateToken = context => {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
-
+                    context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
 
                     return Task.FromResult(0);
                 };
             });
 
-            var client = server.CreateClient();
+            var client = server.HttpClient;
 
             var request = new HttpRequestMessage(HttpMethod.Get, "/");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
@@ -480,8 +463,6 @@ namespace AspNet.Security.OAuth.Validation.Tests {
         }
 
         private static TestServer CreateResourceServer(Action<OAuthValidationOptions> configuration = null) {
-            var builder = new WebHostBuilder();
-
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>(MockBehavior.Strict);
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "invalid-token")))
@@ -492,10 +473,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties();
-
-                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                      return new AuthenticationTicket(identity, new AuthenticationProperties());
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-scopes")))
@@ -504,11 +482,10 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
-                      properties.Items[OAuthValidationConstants.Properties.Scopes] =
+                      properties.Dictionary[OAuthValidationConstants.Properties.Scopes] =
                         @"[""C54A8F5E-0387-43F4-BA43-FD4B50DC190D"",""5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7""]";
 
-                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                      return new AuthenticationTicket(identity, properties);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-single-audience")))
@@ -520,8 +497,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                           [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/""]"
                       });
 
-                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                      return new AuthenticationTicket(identity, properties);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-multiple-audiences")))
@@ -533,8 +509,7 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                           [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/"",""http://www.fabrikam.com/""]"
                       });
 
-                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                      return new AuthenticationTicket(identity, properties);
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "expired-token")))
@@ -545,23 +520,18 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                       var properties = new AuthenticationProperties();
                       properties.ExpiresUtc = DateTimeOffset.UtcNow - TimeSpan.FromDays(1);
 
-                      return new AuthenticationTicket(new ClaimsPrincipal(identity),
-                          properties, OAuthValidationDefaults.AuthenticationScheme);
+                      return new AuthenticationTicket(identity, properties);
                   });
 
-            builder.UseEnvironment("Testing");
-
-            builder.ConfigureLogging(options => options.AddDebug());
-
-            builder.ConfigureServices(services => {
-                services.AddAuthentication();
-            });
-
-            builder.Configure(app => {
+            return TestServer.Create(app => {
                 app.UseOAuthValidation(options => {
-                    options.AutomaticAuthenticate = true;
-                    options.AutomaticChallenge = true;
+                    options.AuthenticationMode = AuthenticationMode.Active;
                     options.AccessTokenFormat = format.Object;
+
+                    // Note: overriding the default data protection provider is not necessary for the tests to pass,
+                    // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
+                    // helps make the unit tests run faster, as no registry or disk access is required in this case.
+                    options.DataProtectionProvider = new EphemeralDataProtectionProvider();
 
                     // Run the configuration delegate
                     // registered by the unit tests.
@@ -569,11 +539,9 @@ namespace AspNet.Security.OAuth.Validation.Tests {
                 });
 
                 app.Map("/ticket", map => map.Run(async context => {
-                    var ticket = new AuthenticateContext(OAuthValidationDefaults.AuthenticationScheme);
-                    await context.Authentication.AuthenticateAsync(ticket);
-
-                    if (!ticket.Accepted || ticket.Principal == null || ticket.Properties == null) {
-                        await context.Authentication.ChallengeAsync();
+                    var ticket = await context.Authentication.AuthenticateAsync(OAuthValidationDefaults.AuthenticationScheme);
+                    if (ticket == null) {
+                        context.Authentication.Challenge();
 
                         return;
                     }
@@ -582,25 +550,26 @@ namespace AspNet.Security.OAuth.Validation.Tests {
 
                     // Return the authentication ticket as a JSON object.
                     await context.Response.WriteAsync(JsonConvert.SerializeObject(new {
-                        Claims = from claim in ticket.Principal.Claims
+                        Claims = from claim in ticket.Identity.Claims
                                  select new { claim.Type, claim.Value },
 
-                        Properties = from property in ticket.Properties
+                        Properties = from property in ticket.Properties.Dictionary
                                      select new { Name = property.Key, property.Value }
                     }));
                 }));
 
                 app.Run(context => {
-                    if (!context.User.Identities.Any(identity => identity.IsAuthenticated)) {
-                        return context.Authentication.ChallengeAsync();
+                    if (context.Authentication.User == null ||
+                       !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                        context.Authentication.Challenge();
+
+                        return Task.FromResult(0);
                     }
 
-                    var identifier = context.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                    var identifier = context.Authentication.User.FindFirst(ClaimTypes.NameIdentifier).Value;
                     return context.Response.WriteAsync(identifier);
                 });
             });
-
-            return new TestServer(builder);
         }
     }
 }

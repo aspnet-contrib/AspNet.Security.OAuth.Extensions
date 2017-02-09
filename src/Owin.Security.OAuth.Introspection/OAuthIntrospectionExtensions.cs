@@ -54,7 +54,7 @@ namespace Owin {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.Use<OAuthIntrospectionMiddleware>(app, options);
+            return app.Use<OAuthIntrospectionMiddleware>(app.Properties, options);
         }
     }
 }

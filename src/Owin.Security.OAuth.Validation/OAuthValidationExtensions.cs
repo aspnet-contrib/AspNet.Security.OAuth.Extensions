@@ -67,7 +67,7 @@ namespace Owin {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            return app.Use<OAuthValidationMiddleware>(app, options);
+            return app.Use<OAuthValidationMiddleware>(app.Properties, options);
         }
     }
 }
