@@ -19,12 +19,16 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Owin.Security.OAuth.Introspection.Tests {
-    public class OAuthIntrospectionHandlerTests {
+namespace Owin.Security.OAuth.Introspection.Tests
+{
+    public class OAuthIntrospectionHandlerTests
+    {
         [Fact]
-        public async Task AuthenticateCoreAsync_MissingTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_MissingTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
             });
@@ -41,9 +45,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
             });
@@ -61,9 +67,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidTokenAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidTokenAllowsSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
             });
@@ -82,9 +90,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
@@ -103,9 +113,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidAudienceCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
@@ -125,9 +137,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AnyMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_AnyMatchingAudienceCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
                 options.ClientId = "Fabrikam";
@@ -149,9 +163,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidAudienceAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidAudienceAllowsSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
@@ -172,9 +188,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_MultipleMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_MultipleMatchingAudienceCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
                 options.ClientId = "Fabrikam";
@@ -196,9 +214,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
             });
@@ -216,9 +236,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredClaims() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredClaims()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
             });
@@ -233,7 +255,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
             var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
             var claims = from claim in ticket.Value<JArray>("Claims")
-                         select new {
+                         select new
+                         {
                              Type = claim.Value<string>(nameof(Claim.Type)),
                              Value = claim.Value<string>(nameof(Claim.Value))
                          };
@@ -252,9 +275,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredProperties() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredProperties()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
                 options.SaveToken = true;
@@ -270,7 +295,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
 
             var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
             var properties = from claim in ticket.Value<JArray>("Properties")
-                             select new {
+                             select new
+                             {
                                  Name = claim.Value<string>("Name"),
                                  Value = claim.Value<string>("Value")
                              };
@@ -283,13 +309,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidReplacedTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidReplacedTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnRetrieveToken = context => {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Token = "invalid-token";
 
                     return Task.FromResult(0);
@@ -309,13 +338,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidReplacedTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidReplacedTokenCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnRetrieveToken = context => {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Token = "valid-token";
 
                     return Task.FromResult(0);
@@ -336,13 +368,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnRetrieveToken = context => {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.SkipToNextMiddleware();
 
                     return Task.FromResult(0);
@@ -362,13 +397,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnRetrieveToken = context => {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Ticket = null;
                     context.HandleResponse();
 
@@ -389,13 +427,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnRetrieveToken = context => {
+                options.Events.OnRetrieveToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
@@ -421,13 +462,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnValidateToken = context => {
+                options.Events.OnValidateToken = context =>
+                {
                     context.SkipToNextMiddleware();
 
                     return Task.FromResult(0);
@@ -447,13 +491,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnValidateToken = context => {
+                options.Events.OnValidateToken = context =>
+                {
                     context.Ticket = null;
                     context.HandleResponse();
 
@@ -474,13 +521,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnValidateToken = context => {
+                options.Events.OnValidateToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
@@ -505,13 +555,16 @@ namespace Owin.Security.OAuth.Introspection.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.ClientId = "Fabrikam";
                 options.ClientSecret = "B4657E03-D619";
 
-                options.Events.OnValidateToken = context => {
+                options.Events.OnValidateToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
@@ -535,11 +588,14 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             Assert.Equal("Contoso", await response.Content.ReadAsStringAsync());
         }
 
-        private static TestServer CreateResourceServer(Action<OAuthIntrospectionOptions> configuration) {
+        private static TestServer CreateResourceServer(Action<OAuthIntrospectionOptions> configuration)
+        {
             var server = CreateAuthorizationServer();
 
-            return TestServer.Create(app => {
-                app.UseOAuthIntrospection(options => {
+            return TestServer.Create(app =>
+            {
+                app.UseOAuthIntrospection(options =>
+                {
                     options.AuthenticationMode = AuthenticationMode.Active;
 
                     options.Authority = server.BaseAddress.AbsoluteUri;
@@ -555,9 +611,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                     configuration?.Invoke(options);
                 });
 
-                app.Map("/ticket", map => map.Run(async context => {
+                app.Map("/ticket", map => map.Run(async context =>
+                {
                     var ticket = await context.Authentication.AuthenticateAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
-                    if (ticket == null) {
+                    if (ticket == null)
+                    {
                         context.Authentication.Challenge();
 
                         return;
@@ -566,7 +624,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                     context.Response.ContentType = "application/json";
 
                     // Return the authentication ticket as a JSON object.
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    {
                         Claims = from claim in ticket.Identity.Claims
                                  select new { claim.Type, claim.Value },
 
@@ -575,9 +634,11 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                     }));
                 }));
 
-                app.Run(context => {
+                app.Run(context =>
+                {
                     if (context.Authentication.User == null ||
-                       !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                       !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated))
+                    {
                         context.Authentication.Challenge();
 
                         return Task.FromResult(0);
@@ -588,12 +649,17 @@ namespace Owin.Security.OAuth.Introspection.Tests {
             });
         }
 
-        private static TestServer CreateAuthorizationServer() {
-            return TestServer.Create(app => {
-                app.Map("/.well-known/openid-configuration", map => map.Run(async context => {
+        private static TestServer CreateAuthorizationServer()
+        {
+            return TestServer.Create(app =>
+            {
+                app.Map("/.well-known/openid-configuration", map => map.Run(async context =>
+                {
                     using (var buffer = new MemoryStream())
-                    using (var writer = new JsonTextWriter(new StreamWriter(buffer))) {
-                        var payload = new JObject {
+                    using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
+                    {
+                        var payload = new JObject
+                        {
                             [OAuthIntrospectionConstants.Metadata.IntrospectionEndpoint] = "http://localhost/connect/introspect"
                         };
 
@@ -608,20 +674,25 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                     }
                 }));
 
-                app.Map("/connect/introspect", map => map.Run(async context => {
+                app.Map("/connect/introspect", map => map.Run(async context =>
+                {
                     using (var buffer = new MemoryStream())
-                    using (var writer = new JsonTextWriter(new StreamWriter(buffer))) {
+                    using (var writer = new JsonTextWriter(new StreamWriter(buffer)))
+                    {
                         var payload = new JObject();
                         var form = await context.Request.ReadFormAsync();
 
-                        switch (form[OAuthIntrospectionConstants.Parameters.Token]) {
-                            case "invalid-token": {
+                        switch (form[OAuthIntrospectionConstants.Parameters.Token])
+                        {
+                            case "invalid-token":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = false;
 
                                 break;
                             }
 
-                            case "expired-token": {
+                            case "expired-token":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
 
@@ -631,7 +702,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                                 break;
                             }
 
-                            case "valid-token": {
+                            case "valid-token":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
@@ -639,7 +711,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                                 break;
                             }
 
-                            case "valid-token-with-scopes": {
+                            case "valid-token-with-scopes":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
@@ -649,7 +722,8 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                                 break;
                             }
 
-                            case "valid-token-with-single-audience": {
+                            case "valid-token-with-single-audience":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
@@ -658,11 +732,13 @@ namespace Owin.Security.OAuth.Introspection.Tests {
                                 break;
                             }
 
-                            case "valid-token-with-multiple-audiences": {
+                            case "valid-token-with-multiple-audiences":
+                            {
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
-                                payload[OAuthIntrospectionConstants.Claims.Audience] = JArray.FromObject(new[] {
+                                payload[OAuthIntrospectionConstants.Claims.Audience] = JArray.FromObject(new[]
+                                {
                                     "http://www.google.com/", "http://www.fabrikam.com/"
                                 });
 

@@ -8,16 +8,19 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AspNet.Security.OAuth.Introspection {
+namespace AspNet.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows customization of the token validation logic.
     /// </summary>
-    public class ValidateTokenContext : BaseControlContext {
+    public class ValidateTokenContext : BaseControlContext
+    {
         public ValidateTokenContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
             Ticket = ticket;
         }

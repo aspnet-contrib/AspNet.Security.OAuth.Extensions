@@ -9,15 +9,18 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 
-namespace Owin.Security.OAuth.Validation {
+namespace Owin.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseNotification<OAuthValidationOptions> {
+    public class RetrieveTokenContext : BaseNotification<OAuthValidationOptions>
+    {
         public RetrieveTokenContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthValidationOptions options)
-            : base(context, options) {
+            : base(context, options)
+        {
         }
 
         /// <summary>

@@ -4,8 +4,10 @@
  * concerning the license and the contributors participating to this project.
  */
 
-namespace Owin.Security.OAuth.Validation {
-    public static class OAuthValidationDefaults {
+namespace Owin.Security.OAuth.Validation
+{
+    public static class OAuthValidationDefaults
+    {
         /// <summary>
         /// Gets the default scheme used by the validation middleware.
         /// </summary>

@@ -9,17 +9,20 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AspNet.Security.OAuth.Introspection {
+namespace AspNet.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows for custom handling of the call to the Authorization Server's Introspection endpoint.
     /// </summary>
-    public class RequestTokenIntrospectionContext : BaseContext {
+    public class RequestTokenIntrospectionContext : BaseContext
+    {
         public RequestTokenIntrospectionContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] HttpRequestMessage message,
             [NotNull] string token)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
             Message = message;
             Token = token;

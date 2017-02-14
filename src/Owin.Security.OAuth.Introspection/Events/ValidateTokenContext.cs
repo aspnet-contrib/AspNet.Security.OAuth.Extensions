@@ -9,16 +9,19 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 
-namespace Owin.Security.OAuth.Introspection {
+namespace Owin.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows customization of the token validation logic.
     /// </summary>
-    public class ValidateTokenContext : BaseNotification<OAuthIntrospectionOptions> {
+    public class ValidateTokenContext : BaseNotification<OAuthIntrospectionOptions>
+    {
         public ValidateTokenContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context, options) {
+            : base(context, options)
+        {
             Ticket = ticket;
         }
 

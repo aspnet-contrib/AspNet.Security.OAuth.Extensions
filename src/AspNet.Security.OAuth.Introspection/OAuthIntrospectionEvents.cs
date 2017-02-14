@@ -7,11 +7,13 @@
 using System;
 using System.Threading.Tasks;
 
-namespace AspNet.Security.OAuth.Introspection {
+namespace AspNet.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows customization of introspection handling within the middleware.
     /// </summary>
-    public class OAuthIntrospectionEvents {
+    public class OAuthIntrospectionEvents
+    {
         /// <summary>
         /// Invoked when a ticket is to be created from an introspection response.
         /// </summary>

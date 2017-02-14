@@ -4,17 +4,22 @@
  * concerning the license and the contributors participating to this project.
  */
 
-namespace Owin.Security.OAuth.Validation {
-    public static class OAuthValidationConstants {
-        public static class Claims {
+namespace Owin.Security.OAuth.Validation
+{
+    public static class OAuthValidationConstants
+    {
+        public static class Claims
+        {
             public const string Scope = "scope";
         }
 
-        public static class Headers {
+        public static class Headers
+        {
             public const string Authorization = "Authorization";
         }
 
-        public static class Properties {
+        public static class Properties
+        {
             public const string Audiences = ".audiences";
             public const string Scopes = ".scopes";
             public const string Token = "access_token";

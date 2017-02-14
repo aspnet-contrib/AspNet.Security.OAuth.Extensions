@@ -10,17 +10,20 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 
-namespace AspNet.Security.OAuth.Introspection {
+namespace AspNet.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseControlContext {
+    public class CreateTicketContext : BaseControlContext
+    {
         public CreateTicketContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket,
             [NotNull] JObject payload)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
             Ticket = ticket;
             Payload = payload;

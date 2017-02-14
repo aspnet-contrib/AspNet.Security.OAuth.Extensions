@@ -11,12 +11,16 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace AspNet.Security.OAuth.Introspection.Tests {
-    public class OAuthIntrospectionMiddlewareTests {
+namespace AspNet.Security.OAuth.Introspection.Tests
+{
+    public class OAuthIntrospectionMiddlewareTests
+    {
         [Fact]
-        public void Constructor_ThrowsAnExceptionForMissingAuthority() {
+        public void Constructor_ThrowsAnExceptionForMissingAuthority()
+        {
             // Arrange, act, assert
-            var exception = Assert.Throws<ArgumentException>(() => CreateResourceServer(options => {
+            var exception = Assert.Throws<ArgumentException>(() => CreateResourceServer(options =>
+            {
                 options.Authority = null;
             }));
 
@@ -31,9 +35,11 @@ namespace AspNet.Security.OAuth.Introspection.Tests {
         [InlineData("client_id", "")]
         [InlineData(null, "client_secret")]
         [InlineData("", "client_secret")]
-        public void Constructor_ThrowsAnExceptionForMissingCredentials(string identifier, string secret) {
+        public void Constructor_ThrowsAnExceptionForMissingCredentials(string identifier, string secret)
+        {
             // Arrange, act, assert
-            var exception = Assert.Throws<ArgumentException>(() => CreateResourceServer(options => {
+            var exception = Assert.Throws<ArgumentException>(() => CreateResourceServer(options =>
+            {
                 options.Authority = "http://www.fabrikam.com/";
                 options.ClientId = identifier;
                 options.ClientSecret = secret;
@@ -43,16 +49,19 @@ namespace AspNet.Security.OAuth.Introspection.Tests {
             Assert.StartsWith("Client credentials must be configured.", exception.Message);
         }
 
-        private static TestServer CreateResourceServer(Action<OAuthIntrospectionOptions> configuration) {
+        private static TestServer CreateResourceServer(Action<OAuthIntrospectionOptions> configuration)
+        {
             var builder = new WebHostBuilder();
             builder.UseEnvironment("Testing");
 
-            builder.ConfigureServices(services => {
+            builder.ConfigureServices(services =>
+            {
                 services.AddAuthentication();
                 services.AddDistributedMemoryCache();
             });
 
-            builder.Configure(app => {
+            builder.Configure(app =>
+            {
                 app.UseOAuthIntrospection(options => configuration(options));
             });
 

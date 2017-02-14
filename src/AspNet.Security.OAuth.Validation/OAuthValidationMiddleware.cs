@@ -12,24 +12,30 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace AspNet.Security.OAuth.Validation {
-    public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions> {
+namespace AspNet.Security.OAuth.Validation
+{
+    public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions>
+    {
         public OAuthValidationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IOptions<OAuthValidationOptions> options,
             [NotNull] ILoggerFactory loggerFactory,
             [NotNull] UrlEncoder encoder,
             [NotNull] IDataProtectionProvider dataProtectionProvider)
-            : base(next, options, loggerFactory, encoder) {
-            if (Options.Events == null) {
+            : base(next, options, loggerFactory, encoder)
+        {
+            if (Options.Events == null)
+            {
                 Options.Events = new OAuthValidationEvents();
             }
 
-            if (Options.DataProtectionProvider == null) {
+            if (Options.DataProtectionProvider == null)
+            {
                 Options.DataProtectionProvider = dataProtectionProvider;
             }
 
-            if (Options.AccessTokenFormat == null) {
+            if (Options.AccessTokenFormat == null)
+            {
                 // Note: the following purposes must match the values used by ASOS.
                 var protector = Options.DataProtectionProvider.CreateProtector(
                     "OpenIdConnectServerMiddleware", "ASOS", "Access_Token", "v1");
@@ -38,7 +44,8 @@ namespace AspNet.Security.OAuth.Validation {
             }
         }
 
-        protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler() {
+        protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler()
+        {
             return new OAuthValidationHandler();
         }
     }

@@ -9,16 +9,19 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 
-namespace Owin.Security.OAuth.Validation {
+namespace Owin.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseNotification<OAuthValidationOptions> {
+    public class CreateTicketContext : BaseNotification<OAuthValidationOptions>
+    {
         public CreateTicketContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthValidationOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context, options) {
+            : base(context, options)
+        {
             Ticket = ticket;
         }
 

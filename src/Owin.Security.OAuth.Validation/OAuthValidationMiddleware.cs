@@ -14,22 +14,28 @@ using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Security.Infrastructure;
 using Microsoft.Owin.Security.Interop;
 
-namespace Owin.Security.OAuth.Validation {
-    public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions> {
+namespace Owin.Security.OAuth.Validation
+{
+    public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions>
+    {
         public OAuthValidationMiddleware(
             [NotNull] OwinMiddleware next,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] OAuthValidationOptions options)
-            : base(next, options) {
-            if (Options.Events == null) {
+            : base(next, options)
+        {
+            if (Options.Events == null)
+            {
                 Options.Events = new OAuthValidationEvents();
             }
 
-            if (options.DataProtectionProvider == null) {
+            if (options.DataProtectionProvider == null)
+            {
                 // Use the application name provided by the OWIN host as the Data Protection discriminator.
                 // If the application name cannot be resolved, throw an invalid operation exception.
                 var discriminator = new AppProperties(properties).AppName;
-                if (string.IsNullOrEmpty(discriminator)) {
+                if (string.IsNullOrEmpty(discriminator))
+                {
                     throw new InvalidOperationException("The application name cannot be resolved from the OWIN application builder. " +
                                                         "Consider manually setting the 'DataProtectionProvider' property in the " +
                                                         "options using 'DataProtectionProvider.Create([unique application name])'.");
@@ -38,7 +44,8 @@ namespace Owin.Security.OAuth.Validation {
                 options.DataProtectionProvider = DataProtectionProvider.Create(discriminator);
             }
 
-            if (options.AccessTokenFormat == null) {
+            if (options.AccessTokenFormat == null)
+            {
                 // Note: the following purposes must match the ones used by ASOS.
                 var protector = options.DataProtectionProvider.CreateProtector(
                     "OpenIdConnectServerMiddleware", "ASOS", "Access_Token", "v1");
@@ -46,12 +53,14 @@ namespace Owin.Security.OAuth.Validation {
                 options.AccessTokenFormat = new AspNetTicketDataFormat(new DataProtectorShim(protector));
             }
 
-            if (options.Logger == null) {
+            if (options.Logger == null)
+            {
                 options.Logger = new LoggerFactory().CreateLogger<OAuthValidationMiddleware>();
             }
         }
 
-        protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler() {
+        protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler()
+        {
             return new OAuthValidationHandler();
         }
     }

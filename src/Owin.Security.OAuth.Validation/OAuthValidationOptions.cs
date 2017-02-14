@@ -10,10 +10,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security;
 
-namespace Owin.Security.OAuth.Validation {
-    public class OAuthValidationOptions : AuthenticationOptions {
+namespace Owin.Security.OAuth.Validation
+{
+    public class OAuthValidationOptions : AuthenticationOptions
+    {
         public OAuthValidationOptions()
-            : base(OAuthValidationDefaults.AuthenticationScheme) {
+            : base(OAuthValidationDefaults.AuthenticationScheme)
+        {
             AuthenticationMode = AuthenticationMode.Active;
         }
 

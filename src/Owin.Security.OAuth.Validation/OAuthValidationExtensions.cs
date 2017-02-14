@@ -8,19 +8,23 @@ using System;
 using JetBrains.Annotations;
 using Owin.Security.OAuth.Validation;
 
-namespace Owin {
+namespace Owin
+{
     /// <summary>
     /// Provides extension methods used to configure the OAuth2
     /// validation middleware in an OWIN/Katana pipeline.
     /// </summary>
-    public static class OAuthValidationExtensions {
+    public static class OAuthValidationExtensions
+    {
         /// <summary>
         /// Adds a new instance of the OAuth2 validation middleware in the OWIN/Katana pipeline.
         /// </summary>
         /// <param name="app">The application builder.</param>
         /// <returns>The application builder.</returns>
-        public static IAppBuilder UseOAuthValidation([NotNull] this IAppBuilder app) {
-            if (app == null) {
+        public static IAppBuilder UseOAuthValidation([NotNull] this IAppBuilder app)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
@@ -35,12 +39,15 @@ namespace Owin {
         /// <returns>The application builder.</returns>
         public static IAppBuilder UseOAuthValidation(
             [NotNull] this IAppBuilder app,
-            [NotNull] Action<OAuthValidationOptions> configuration) {
-            if (app == null) {
+            [NotNull] Action<OAuthValidationOptions> configuration)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (configuration == null) {
+            if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
@@ -58,12 +65,15 @@ namespace Owin {
         /// <returns>The application builder.</returns>
         public static IAppBuilder UseOAuthValidation(
             [NotNull] this IAppBuilder app,
-            [NotNull] OAuthValidationOptions options) {
-            if (app == null) {
+            [NotNull] OAuthValidationOptions options)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (options == null) {
+            if (options == null)
+            {
                 throw new ArgumentNullException(nameof(options));
             }
 

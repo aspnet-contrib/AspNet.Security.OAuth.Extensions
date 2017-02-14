@@ -20,10 +20,13 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Owin.Security.OAuth.Validation.Tests {
-    public class OAuthValidationHandlerTests {
+namespace Owin.Security.OAuth.Validation.Tests
+{
+    public class OAuthValidationHandlerTests
+    {
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidTokenCausesInvalidAuthentication()
+        {
             // Arrange
             var server = CreateResourceServer();
 
@@ -40,7 +43,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidTokenAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidTokenAllowsSuccessfulAuthentication()
+        {
             // Arrange
             var server = CreateResourceServer();
 
@@ -58,9 +62,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
@@ -77,9 +83,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidAudienceCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidAudienceCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
@@ -96,9 +104,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidAudienceAllowsSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidAudienceAllowsSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
             });
 
@@ -116,9 +126,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AnyMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_AnyMatchingAudienceCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
             });
@@ -137,9 +149,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_MultipleMatchingAudienceCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_MultipleMatchingAudienceCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.Audiences.Add("http://www.fabrikam.com/");
                 options.Audiences.Add("http://www.google.com/");
             });
@@ -158,7 +172,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication()
+        {
             // Arrange
             var server = CreateResourceServer();
 
@@ -175,7 +190,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredClaims() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredClaims()
+        {
             // Arrange
             var server = CreateResourceServer();
 
@@ -189,7 +205,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
 
             var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
             var claims = from claim in ticket.Value<JArray>("Claims")
-                         select new {
+                         select new
+                         {
                              Type = claim.Value<string>(nameof(Claim.Type)),
                              Value = claim.Value<string>(nameof(Claim.Value))
                          };
@@ -208,9 +225,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredProperties() {
+        public async Task AuthenticateCoreAsync_AuthenticationTicketContainsRequiredProperties()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
+            var server = CreateResourceServer(options =>
+            {
                 options.SaveToken = true;
             });
 
@@ -224,7 +243,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
 
             var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
             var properties = from claim in ticket.Value<JArray>("Properties")
-                             select new {
+                             select new
+                             {
                                  Name = claim.Value<string>("Name"),
                                  Value = claim.Value<string>("Value")
                              };
@@ -237,10 +257,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_InvalidReplacedTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_InvalidReplacedTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnRetrieveToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Token = "invalid-token";
 
                     return Task.FromResult(0);
@@ -260,10 +283,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ValidReplacedTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ValidReplacedTokenCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnRetrieveToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Token = "valid-token";
 
                     return Task.FromResult(0);
@@ -284,10 +310,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnRetrieveToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.SkipToNextMiddleware();
 
                     return Task.FromResult(0);
@@ -307,10 +336,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnRetrieveToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnRetrieveToken = context =>
+                {
                     context.Ticket = null;
                     context.HandleResponse();
 
@@ -331,10 +363,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnRetrieveToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnRetrieveToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
@@ -360,10 +395,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnValidateToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnValidateToken = context =>
+                {
                     context.SkipToNextMiddleware();
 
                     return Task.FromResult(0);
@@ -383,10 +421,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication() {
+        public async Task AuthenticateCoreAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnValidateToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnValidateToken = context =>
+                {
                     context.Ticket = null;
                     context.HandleResponse();
 
@@ -407,10 +448,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnValidateToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnValidateToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
@@ -435,10 +479,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
         }
 
         [Fact]
-        public async Task AuthenticateCoreAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication() {
+        public async Task AuthenticateCoreAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication()
+        {
             // Arrange
-            var server = CreateResourceServer(options => {
-                options.Events.OnValidateToken = context => {
+            var server = CreateResourceServer(options =>
+            {
+                options.Events.OnValidateToken = context =>
+                {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
                     identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
 
@@ -462,14 +509,16 @@ namespace Owin.Security.OAuth.Validation.Tests {
             Assert.Equal("Contoso", await response.Content.ReadAsStringAsync());
         }
 
-        private static TestServer CreateResourceServer(Action<OAuthValidationOptions> configuration = null) {
+        private static TestServer CreateResourceServer(Action<OAuthValidationOptions> configuration = null)
+        {
             var format = new Mock<ISecureDataFormat<AuthenticationTicket>>(MockBehavior.Strict);
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "invalid-token")))
                   .Returns(value: null);
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token")))
-                  .Returns(delegate {
+                  .Returns(delegate
+                  {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
@@ -477,7 +526,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-scopes")))
-                  .Returns(delegate {
+                  .Returns(delegate
+                  {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
@@ -489,11 +539,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-single-audience")))
-                  .Returns(delegate {
+                  .Returns(delegate
+                  {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties(new Dictionary<string, string> {
+                      var properties = new AuthenticationProperties(new Dictionary<string, string>
+                      {
                           [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/""]"
                       });
 
@@ -501,11 +553,13 @@ namespace Owin.Security.OAuth.Validation.Tests {
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "valid-token-with-multiple-audiences")))
-                  .Returns(delegate {
+                  .Returns(delegate
+                  {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
-                      var properties = new AuthenticationProperties(new Dictionary<string, string> {
+                      var properties = new AuthenticationProperties(new Dictionary<string, string>
+                      {
                           [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/"",""http://www.fabrikam.com/""]"
                       });
 
@@ -513,7 +567,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
                   });
 
             format.Setup(mock => mock.Unprotect(It.Is<string>(token => token == "expired-token")))
-                  .Returns(delegate {
+                  .Returns(delegate
+                  {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
                       identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
 
@@ -523,8 +578,10 @@ namespace Owin.Security.OAuth.Validation.Tests {
                       return new AuthenticationTicket(identity, properties);
                   });
 
-            return TestServer.Create(app => {
-                app.UseOAuthValidation(options => {
+            return TestServer.Create(app =>
+            {
+                app.UseOAuthValidation(options =>
+                {
                     options.AuthenticationMode = AuthenticationMode.Active;
                     options.AccessTokenFormat = format.Object;
 
@@ -538,9 +595,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
                     configuration?.Invoke(options);
                 });
 
-                app.Map("/ticket", map => map.Run(async context => {
+                app.Map("/ticket", map => map.Run(async context =>
+                {
                     var ticket = await context.Authentication.AuthenticateAsync(OAuthValidationDefaults.AuthenticationScheme);
-                    if (ticket == null) {
+                    if (ticket == null)
+                    {
                         context.Authentication.Challenge();
 
                         return;
@@ -549,7 +608,8 @@ namespace Owin.Security.OAuth.Validation.Tests {
                     context.Response.ContentType = "application/json";
 
                     // Return the authentication ticket as a JSON object.
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new {
+                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    {
                         Claims = from claim in ticket.Identity.Claims
                                  select new { claim.Type, claim.Value },
 
@@ -558,9 +618,11 @@ namespace Owin.Security.OAuth.Validation.Tests {
                     }));
                 }));
 
-                app.Run(context => {
+                app.Run(context =>
+                {
                     if (context.Authentication.User == null ||
-                       !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated)) {
+                       !context.Authentication.User.Identities.Any(identity => identity.IsAuthenticated))
+                    {
                         context.Authentication.Challenge();
 
                         return Task.FromResult(0);

@@ -12,10 +12,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Infrastructure;
 using Microsoft.Owin.Security;
 
-namespace Owin.Security.OAuth.Introspection {
-    public class OAuthIntrospectionOptions : AuthenticationOptions {
+namespace Owin.Security.OAuth.Introspection
+{
+    public class OAuthIntrospectionOptions : AuthenticationOptions
+    {
         public OAuthIntrospectionOptions()
-            : base(OAuthIntrospectionDefaults.AuthenticationScheme) {
+            : base(OAuthIntrospectionDefaults.AuthenticationScheme)
+        {
             AuthenticationMode = AuthenticationMode.Active;
         }
 

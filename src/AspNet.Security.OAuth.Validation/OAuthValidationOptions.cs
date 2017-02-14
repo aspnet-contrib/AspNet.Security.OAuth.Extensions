@@ -10,9 +10,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Authentication;
 
-namespace AspNet.Security.OAuth.Validation {
-    public class OAuthValidationOptions : AuthenticationOptions {
-        public OAuthValidationOptions() {
+namespace AspNet.Security.OAuth.Validation
+{
+    public class OAuthValidationOptions : AuthenticationOptions
+    {
+        public OAuthValidationOptions()
+        {
             AuthenticationScheme = OAuthValidationDefaults.AuthenticationScheme;
             AutomaticAuthenticate = true;
             AutomaticChallenge = true;

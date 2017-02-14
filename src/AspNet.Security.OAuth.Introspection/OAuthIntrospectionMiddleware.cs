@@ -15,8 +15,10 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace AspNet.Security.OAuth.Introspection {
-    public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions> {
+namespace AspNet.Security.OAuth.Introspection
+{
+    public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions>
+    {
         public OAuthIntrospectionMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IOptions<OAuthIntrospectionOptions> options,
@@ -24,26 +26,32 @@ namespace AspNet.Security.OAuth.Introspection {
             [NotNull] UrlEncoder encoder,
             [NotNull] IDistributedCache cache,
             [NotNull] IDataProtectionProvider dataProtectionProvider)
-            : base(next, options, loggerFactory, encoder) {
+            : base(next, options, loggerFactory, encoder)
+        {
             if (string.IsNullOrEmpty(Options.Authority) &&
-                string.IsNullOrEmpty(Options.IntrospectionEndpoint)) {
+                string.IsNullOrEmpty(Options.IntrospectionEndpoint))
+            {
                 throw new ArgumentException("The authority or the introspection endpoint must be configured.", nameof(options));
             }
 
             if (string.IsNullOrEmpty(Options.ClientId) ||
-                string.IsNullOrEmpty(Options.ClientSecret)) {
+                string.IsNullOrEmpty(Options.ClientSecret))
+            {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }
 
-            if (Options.Events == null) {
+            if (Options.Events == null)
+            {
                 Options.Events = new OAuthIntrospectionEvents();
             }
 
-            if (Options.DataProtectionProvider == null) {
+            if (Options.DataProtectionProvider == null)
+            {
                 Options.DataProtectionProvider = dataProtectionProvider;
             }
 
-            if (Options.AccessTokenFormat == null) {
+            if (Options.AccessTokenFormat == null)
+            {
                 var protector = Options.DataProtectionProvider.CreateProtector(
                     nameof(OAuthIntrospectionMiddleware),
                     Options.AuthenticationScheme, "Access_Token", "v1");
@@ -51,12 +59,15 @@ namespace AspNet.Security.OAuth.Introspection {
                 Options.AccessTokenFormat = new TicketDataFormat(protector);
             }
 
-            if (Options.Cache == null) {
+            if (Options.Cache == null)
+            {
                 Options.Cache = cache;
             }
 
-            if (Options.HttpClient == null) {
-                Options.HttpClient = new HttpClient {
+            if (Options.HttpClient == null)
+            {
+                Options.HttpClient = new HttpClient
+                {
                     Timeout = TimeSpan.FromSeconds(15),
                     MaxResponseContentBufferSize = 1024 * 1024 * 10
                 };
@@ -65,7 +76,8 @@ namespace AspNet.Security.OAuth.Introspection {
             }
         }
 
-        protected override AuthenticationHandler<OAuthIntrospectionOptions> CreateHandler() {
+        protected override AuthenticationHandler<OAuthIntrospectionOptions> CreateHandler()
+        {
             return new OAuthIntrospectionHandler();
         }
     }

@@ -12,9 +12,12 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace AspNet.Security.OAuth.Introspection {
-    public class OAuthIntrospectionOptions : AuthenticationOptions {
-        public OAuthIntrospectionOptions() {
+namespace AspNet.Security.OAuth.Introspection
+{
+    public class OAuthIntrospectionOptions : AuthenticationOptions
+    {
+        public OAuthIntrospectionOptions()
+        {
             AuthenticationScheme = OAuthIntrospectionDefaults.AuthenticationScheme;
             AutomaticAuthenticate = true;
             AutomaticChallenge = true;

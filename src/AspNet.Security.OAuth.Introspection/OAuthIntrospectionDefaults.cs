@@ -4,8 +4,10 @@
  * concerning the license and the contributors participating to this project.
  */
 
-namespace AspNet.Security.OAuth.Introspection {
-    public static class OAuthIntrospectionDefaults {
+namespace AspNet.Security.OAuth.Introspection
+{
+    public static class OAuthIntrospectionDefaults
+    {
         /// <summary>
         /// Gets the default scheme used by the introspection middleware.
         /// </summary>

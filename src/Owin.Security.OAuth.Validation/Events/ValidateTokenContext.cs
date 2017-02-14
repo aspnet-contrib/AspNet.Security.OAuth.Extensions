@@ -9,16 +9,19 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 
-namespace Owin.Security.OAuth.Validation {
+namespace Owin.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows customization of the token validation logic.
     /// </summary>
-    public class ValidateTokenContext : BaseNotification<OAuthValidationOptions> {
+    public class ValidateTokenContext : BaseNotification<OAuthValidationOptions>
+    {
         public ValidateTokenContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthValidationOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context, options) {
+            : base(context, options)
+        {
             Ticket = ticket;
         }
 

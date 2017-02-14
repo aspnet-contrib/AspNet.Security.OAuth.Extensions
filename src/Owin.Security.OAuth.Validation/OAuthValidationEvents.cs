@@ -7,11 +7,13 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Owin.Security.OAuth.Validation {
+namespace Owin.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows customization of validation handling within the middleware.
     /// </summary>
-    public class OAuthValidationEvents {
+    public class OAuthValidationEvents
+    {
         /// <summary>
         /// Invoked when a ticket is to be created from an access token.
         /// </summary>

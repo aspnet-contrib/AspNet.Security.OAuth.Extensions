@@ -9,16 +9,19 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AspNet.Security.OAuth.Validation {
+namespace AspNet.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseControlContext {
+    public class CreateTicketContext : BaseControlContext
+    {
         public CreateTicketContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthValidationOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
             Ticket = ticket;
         }

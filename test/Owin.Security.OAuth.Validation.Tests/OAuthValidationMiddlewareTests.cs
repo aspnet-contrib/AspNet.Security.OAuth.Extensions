@@ -10,14 +10,18 @@ using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Testing;
 using Xunit;
 
-namespace Owin.Security.OAuth.Validation.Tests {
-    public class OAuthValidationMiddlewareTests {
+namespace Owin.Security.OAuth.Validation.Tests
+{
+    public class OAuthValidationMiddlewareTests
+    {
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public void Constructor_ThrowsAnExceptionForMissingAppName(string name) {
+        public void Constructor_ThrowsAnExceptionForMissingAppName(string name)
+        {
             // Arrange, act, assert
-            var exception = Assert.Throws<TargetInvocationException>(() => TestServer.Create(app => {
+            var exception = Assert.Throws<TargetInvocationException>(() => TestServer.Create(app =>
+            {
                 var properties = new AppProperties(app.Properties);
                 properties.AppName = name;
 

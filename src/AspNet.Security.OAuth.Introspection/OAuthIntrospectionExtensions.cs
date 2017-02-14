@@ -9,12 +9,14 @@ using AspNet.Security.OAuth.Introspection;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder {
+namespace Microsoft.AspNetCore.Builder
+{
     /// <summary>
     /// Provides extension methods used to configure the OAuth2
     /// introspection middleware in an ASP.NET 5 pipeline.
     /// </summary>
-    public static class OAuthIntrospectionExtensions {
+    public static class OAuthIntrospectionExtensions
+    {
         /// <summary>
         /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET 5 pipeline.
         /// </summary>
@@ -23,12 +25,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The application builder.</returns>
         public static IApplicationBuilder UseOAuthIntrospection(
             [NotNull] this IApplicationBuilder app,
-            [NotNull] Action<OAuthIntrospectionOptions> configuration) {
-            if (app == null) {
+            [NotNull] Action<OAuthIntrospectionOptions> configuration)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (configuration == null) {
+            if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
@@ -46,12 +51,15 @@ namespace Microsoft.AspNetCore.Builder {
         /// <returns>The application builder.</returns>
         public static IApplicationBuilder UseOAuthIntrospection(
             [NotNull] this IApplicationBuilder app,
-            [NotNull] OAuthIntrospectionOptions options) {
-            if (app == null) {
+            [NotNull] OAuthIntrospectionOptions options)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (options == null) {
+            if (options == null)
+            {
                 throw new ArgumentNullException(nameof(options));
             }
 

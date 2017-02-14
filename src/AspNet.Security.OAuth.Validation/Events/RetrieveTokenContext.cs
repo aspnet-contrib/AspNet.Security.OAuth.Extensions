@@ -8,15 +8,18 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AspNet.Security.OAuth.Validation {
+namespace AspNet.Security.OAuth.Validation
+{
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseControlContext {
+    public class RetrieveTokenContext : BaseControlContext
+    {
         public RetrieveTokenContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthValidationOptions options)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
         }
 

@@ -9,15 +9,18 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 
-namespace Owin.Security.OAuth.Introspection {
+namespace Owin.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseNotification<OAuthIntrospectionOptions> {
+    public class RetrieveTokenContext : BaseNotification<OAuthIntrospectionOptions>
+    {
         public RetrieveTokenContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthIntrospectionOptions options)
-            : base(context, options) {
+            : base(context, options)
+        {
         }
 
         /// <summary>

@@ -9,17 +9,20 @@ using JetBrains.Annotations;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Provider;
 
-namespace Owin.Security.OAuth.Introspection {
+namespace Owin.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows for custom handling of the call to the Authorization Server's Introspection endpoint.
     /// </summary>
-    public class RequestTokenIntrospectionContext : BaseContext<OAuthIntrospectionOptions> {
+    public class RequestTokenIntrospectionContext : BaseContext<OAuthIntrospectionOptions>
+    {
         public RequestTokenIntrospectionContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] HttpRequestMessage message,
             [NotNull] string token)
-            : base(context, options) {
+            : base(context, options)
+        {
             Message = message;
             Token = token;
         }

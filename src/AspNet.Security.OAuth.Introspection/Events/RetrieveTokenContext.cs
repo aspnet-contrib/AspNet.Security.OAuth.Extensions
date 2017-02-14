@@ -8,15 +8,18 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
-namespace AspNet.Security.OAuth.Introspection {
+namespace AspNet.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseControlContext {
+    public class RetrieveTokenContext : BaseControlContext
+    {
         public RetrieveTokenContext(
             [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options)
-            : base(context) {
+            : base(context)
+        {
             Options = options;
         }
 

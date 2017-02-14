@@ -10,17 +10,20 @@ using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Notifications;
 using Newtonsoft.Json.Linq;
 
-namespace Owin.Security.OAuth.Introspection {
+namespace Owin.Security.OAuth.Introspection
+{
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseNotification<OAuthIntrospectionOptions> {
+    public class CreateTicketContext : BaseNotification<OAuthIntrospectionOptions>
+    {
         public CreateTicketContext(
             [NotNull] IOwinContext context,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket,
             [NotNull] JObject payload)
-            : base(context, options) {
+            : base(context, options)
+        {
             Ticket = ticket;
             Payload = payload;
         }

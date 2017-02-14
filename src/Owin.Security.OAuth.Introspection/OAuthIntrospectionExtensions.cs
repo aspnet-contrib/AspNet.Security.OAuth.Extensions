@@ -8,12 +8,14 @@ using System;
 using JetBrains.Annotations;
 using Owin.Security.OAuth.Introspection;
 
-namespace Owin {
+namespace Owin
+{
     /// <summary>
     /// Provides extension methods used to configure the OAuth2
     /// introspection middleware in an OWIN/Katana pipeline.
     /// </summary>
-    public static class OAuthIntrospectionExtensions {
+    public static class OAuthIntrospectionExtensions
+    {
         /// <summary>
         /// Adds a new instance of the OAuth2 introspection middleware in the OWIN/Katana pipeline.
         /// </summary>
@@ -22,12 +24,15 @@ namespace Owin {
         /// <returns>The application builder.</returns>
         public static IAppBuilder UseOAuthIntrospection(
             [NotNull] this IAppBuilder app,
-            [NotNull] Action<OAuthIntrospectionOptions> configuration) {
-            if (app == null) {
+            [NotNull] Action<OAuthIntrospectionOptions> configuration)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (configuration == null) {
+            if (configuration == null)
+            {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
@@ -45,12 +50,15 @@ namespace Owin {
         /// <returns>The application builder.</returns>
         public static IAppBuilder UseOAuthIntrospection(
             [NotNull] this IAppBuilder app,
-            [NotNull] OAuthIntrospectionOptions options) {
-            if (app == null) {
+            [NotNull] OAuthIntrospectionOptions options)
+        {
+            if (app == null)
+            {
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (options == null) {
+            if (options == null)
+            {
                 throw new ArgumentNullException(nameof(options));
             }
 

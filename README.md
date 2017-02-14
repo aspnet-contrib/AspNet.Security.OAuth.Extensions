@@ -11,13 +11,15 @@ AspNet.Security.OAuth.Extensions
 ## Get started
 
 ```csharp
-app.UseOAuthValidation(options => {
+app.UseOAuthValidation(options =>
+{
     options.Audiences.Add("resource_server");
 });
 ```
 
 ```csharp
-app.UseOAuthIntrospection(options => {
+app.UseOAuthIntrospection(options =>
+{
     options.AutomaticAuthenticate = true;
     options.AutomaticChallenge = true;
     options.Audiences.Add("resource_server");

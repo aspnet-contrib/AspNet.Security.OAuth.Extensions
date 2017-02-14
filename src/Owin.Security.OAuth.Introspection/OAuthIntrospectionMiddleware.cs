@@ -17,32 +17,40 @@ using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Security.Infrastructure;
 using Microsoft.Owin.Security.Interop;
 
-namespace Owin.Security.OAuth.Introspection {
-    public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions> {
+namespace Owin.Security.OAuth.Introspection
+{
+    public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions>
+    {
         public OAuthIntrospectionMiddleware(
             [NotNull] OwinMiddleware next,
             [NotNull] IDictionary<string, object> properties,
             [NotNull] OAuthIntrospectionOptions options)
-            : base(next, options) {
+            : base(next, options)
+        {
             if (string.IsNullOrEmpty(options.Authority) &&
-                string.IsNullOrEmpty(options.IntrospectionEndpoint)) {
+                string.IsNullOrEmpty(options.IntrospectionEndpoint))
+            {
                 throw new ArgumentException("The authority or the introspection endpoint must be configured.", nameof(options));
             }
 
             if (string.IsNullOrEmpty(options.ClientId) ||
-                string.IsNullOrEmpty(options.ClientSecret)) {
+                string.IsNullOrEmpty(options.ClientSecret))
+            {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }
 
-            if (Options.Events == null) {
+            if (Options.Events == null)
+            {
                 Options.Events = new OAuthIntrospectionEvents();
             }
 
-            if (options.DataProtectionProvider == null) {
+            if (options.DataProtectionProvider == null)
+            {
                 // Use the application name provided by the OWIN host as the Data Protection discriminator.
                 // If the application name cannot be resolved, throw an invalid operation exception.
                 var discriminator = new AppProperties(properties).AppName;
-                if (string.IsNullOrEmpty(discriminator)) {
+                if (string.IsNullOrEmpty(discriminator))
+                {
                     throw new InvalidOperationException("The application name cannot be resolved from the OWIN application builder. " +
                                                         "Consider manually setting the 'DataProtectionProvider' property in the " +
                                                         "options using 'DataProtectionProvider.Create([unique application name])'.");
@@ -51,7 +59,8 @@ namespace Owin.Security.OAuth.Introspection {
                 options.DataProtectionProvider = DataProtectionProvider.Create(discriminator);
             }
 
-            if (options.AccessTokenFormat == null) {
+            if (options.AccessTokenFormat == null)
+            {
                 var protector = Options.DataProtectionProvider.CreateProtector(
                     nameof(OAuthIntrospectionMiddleware),
                     Options.AuthenticationType, "Access_Token", "v1");
@@ -59,18 +68,23 @@ namespace Owin.Security.OAuth.Introspection {
                 options.AccessTokenFormat = new AspNetTicketDataFormat(new DataProtectorShim(protector));
             }
 
-            if (options.Cache == null) {
-                options.Cache = new MemoryDistributedCache(new MemoryCache(new MemoryCacheOptions {
+            if (options.Cache == null)
+            {
+                options.Cache = new MemoryDistributedCache(new MemoryCache(new MemoryCacheOptions
+                {
                     CompactOnMemoryPressure = true
                 }));
             }
 
-            if (options.Logger == null) {
+            if (options.Logger == null)
+            {
                 options.Logger = new LoggerFactory().CreateLogger<OAuthIntrospectionMiddleware>();
             }
 
-            if (options.HttpClient == null) {
-                options.HttpClient = new HttpClient {
+            if (options.HttpClient == null)
+            {
+                options.HttpClient = new HttpClient
+                {
                     Timeout = TimeSpan.FromSeconds(15),
                     MaxResponseContentBufferSize = 1024 * 1024 * 10
                 };
@@ -79,7 +93,8 @@ namespace Owin.Security.OAuth.Introspection {
             }
         }
 
-        protected override AuthenticationHandler<OAuthIntrospectionOptions> CreateHandler() {
+        protected override AuthenticationHandler<OAuthIntrospectionOptions> CreateHandler()
+        {
             return new OAuthIntrospectionHandler();
         }
     }
