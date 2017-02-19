@@ -36,6 +36,7 @@
     "JetBrains.Annotations": { "type": "build", "version": "10.1.4" },
     "Microsoft.Extensions.Caching.Memory": "1.0.0",
     "Microsoft.Extensions.Logging": "1.0.0",
+    "Microsoft.IdentityModel.Protocol.Extensions": "1.0.4.402070948",
     "Microsoft.Owin.Security.Interop": "1.0.0",
     "Newtonsoft.Json": "9.0.1"
   },

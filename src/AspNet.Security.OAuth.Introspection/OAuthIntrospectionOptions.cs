@@ -4,6 +4,7 @@
  * concerning the license and the contributors participating to this project.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authentication;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.Protocols;
 
 namespace AspNet.Security.OAuth.Introspection
 {
@@ -24,21 +26,37 @@ namespace AspNet.Security.OAuth.Introspection
         }
 
         /// <summary>
-        /// Gets the intended audiences of this resource server.
-        /// Setting this property is recommended when the authorization
-        /// server issues access tokens for multiple distinct resource servers.
+        /// Gets or sets the absolute URL of the OAuth2/OpenID Connect server.
+        /// Note: this property is ignored when <see cref="Configuration"/>
+        /// or <see cref="ConfigurationManager"/> are set.
         /// </summary>
-        public ISet<string> Audiences { get; } = new HashSet<string>();
+        public Uri Authority { get; set; }
 
         /// <summary>
-        /// Gets or sets the base address of the OAuth2/OpenID Connect server.
+        /// Gets or sets the URL of the OAuth2/OpenID Connect server discovery endpoint.
+        /// When the URL is relative, <see cref="Authority"/> must be set and absolute.
+        /// Note: this property is ignored when <see cref="Configuration"/>
+        /// or <see cref="ConfigurationManager"/> are set.
         /// </summary>
-        public string Authority { get; set; }
+        public Uri MetadataAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the address of the introspection endpoint.
+        /// Gets or sets a boolean indicating whether HTTPS is required to retrieve the metadata document.
+        /// The default value is <c>true</c>. This option should be used only in development environments.
+        /// Note: this property is ignored when <see cref="Configuration"/> or <see cref="ConfigurationManager"/> are set.
         /// </summary>
-        public string IntrospectionEndpoint { get; set; }
+        public bool RequireHttpsMetadata { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the configuration used by the introspection middleware.
+        /// Note: this property is ignored when <see cref="ConfigurationManager"/> is set.
+        /// </summary>
+        public OAuthIntrospectionConfiguration Configuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration manager used by the introspection middleware.
+        /// </summary>
+        public IConfigurationManager<OAuthIntrospectionConfiguration> ConfigurationManager { get; set; }
 
         /// <summary>
         /// Gets or sets the client identifier representing the resource server.
@@ -56,6 +74,13 @@ namespace AspNet.Security.OAuth.Introspection
         /// the caller as part of the WWW-Authenticate header.
         /// </summary>
         public string Realm { get; set; }
+
+        /// <summary>
+        /// Gets the intended audiences of this resource server.
+        /// Setting this property is recommended when the authorization
+        /// server issues access tokens for multiple distinct resource servers.
+        /// </summary>
+        public ISet<string> Audiences { get; } = new HashSet<string>();
 
         /// <summary>
         /// Gets or sets a boolean determining whether the access token should be stored in the
@@ -84,8 +109,7 @@ namespace AspNet.Security.OAuth.Introspection
         public OAuthIntrospectionEvents Events { get; set; } = new OAuthIntrospectionEvents();
 
         /// <summary>
-        /// Gets or sets the HTTP client used to communicate
-        /// with the remote OAuth2/OpenID Connect server.
+        /// Gets or sets the HTTP client used to communicate with the remote OAuth2 server.
         /// </summary>
         public HttpClient HttpClient { get; set; }
 

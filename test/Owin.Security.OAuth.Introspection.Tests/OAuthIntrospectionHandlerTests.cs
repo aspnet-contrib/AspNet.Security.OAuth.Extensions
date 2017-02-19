@@ -683,8 +683,9 @@ namespace Owin.Security.OAuth.Introspection.Tests
                     options.ClientId = "Fabrikam";
                     options.ClientSecret = "B4657E03-D619";
 
-                    options.Authority = server.BaseAddress.AbsoluteUri;
+                    options.Authority = server.BaseAddress;
                     options.HttpClient = server.HttpClient;
+                    options.RequireHttpsMetadata = false;
 
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
                     // but is useful to ensure unnecessary keys are not persisted in testing environments, which also

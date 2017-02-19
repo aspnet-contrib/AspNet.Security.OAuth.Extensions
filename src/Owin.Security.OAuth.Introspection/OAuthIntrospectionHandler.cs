@@ -348,59 +348,25 @@ namespace Owin.Security.OAuth.Introspection
             }
         }
 
-        protected virtual async Task<string> ResolveIntrospectionEndpointAsync(string issuer)
-        {
-            if (issuer.EndsWith("/"))
-            {
-                issuer = issuer.Substring(0, issuer.Length - 1);
-            }
-
-            // Create a new discovery request containing the access token and the client credentials.
-            var request = new HttpRequestMessage(HttpMethod.Get, issuer + "/.well-known/openid-configuration");
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Request.CallCancelled);
-            if (!response.IsSuccessStatusCode)
-            {
-                Options.Logger.LogError("An error occurred when retrieving the issuer metadata: the remote server " +
-                                        "returned a {Status} response with the following payload: {Headers} {Body}.",
-                                        /* Status: */ response.StatusCode,
-                                        /* Headers: */ response.Headers.ToString(),
-                                        /* Body: */ await response.Content.ReadAsStringAsync());
-
-                return null;
-            }
-
-            var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
-
-            var address = payload[OAuthIntrospectionConstants.Metadata.IntrospectionEndpoint];
-            if (address == null)
-            {
-                return null;
-            }
-
-            return (string) address;
-        }
-
         protected virtual async Task<JObject> GetIntrospectionPayloadAsync(string token)
         {
-            // Note: updating the options during a request is not thread safe but is harmless in this case:
-            // in the worst case, it will only send multiple configuration requests to the authorization server.
-            if (string.IsNullOrEmpty(Options.IntrospectionEndpoint))
-            {
-                Options.IntrospectionEndpoint = await ResolveIntrospectionEndpointAsync(Options.Authority);
-            }
-
-            if (string.IsNullOrEmpty(Options.IntrospectionEndpoint))
+            var configuration = await Options.ConfigurationManager.GetConfigurationAsync(Request.CallCancelled);
+            if (configuration == null)
             {
                 throw new InvalidOperationException("The OAuth2 introspection middleware was unable to retrieve " +
-                                                    "the provider configuration from the OAuth2 authorization server.");
+                                                    "the provider configuration from the authorization server.");
+            }
+
+            if (string.IsNullOrEmpty(configuration.IntrospectionEndpoint))
+            {
+                throw new InvalidOperationException("The OAuth2 introspection middleware was unable to retrieve " +
+                                                    "the introspection endpoint address from the discovery document.");
             }
 
             var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Options.ClientId}:{Options.ClientSecret}"));
 
             // Create a new introspection request containing the access token and the client credentials.
-            var request = new HttpRequestMessage(HttpMethod.Post, Options.IntrospectionEndpoint);
+            var request = new HttpRequestMessage(HttpMethod.Post, configuration.IntrospectionEndpoint);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
@@ -416,7 +382,7 @@ namespace Owin.Security.OAuth.Introspection
             var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Request.CallCancelled);
             if (!response.IsSuccessStatusCode)
             {
-                Options.Logger.LogError("An error occurred when validating an access token: the remote server " +
+                Options.Logger.LogError("An error occurred while validating an access token: the remote server " +
                                         "returned a {Status} response with the following payload: {Headers} {Body}.",
                                         /* Status: */ response.StatusCode,
                                         /* Headers: */ response.Headers.ToString(),

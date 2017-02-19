@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Protocols;
 using Microsoft.Owin;
 using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Security.Infrastructure;
@@ -27,14 +28,7 @@ namespace Owin.Security.OAuth.Introspection
             [NotNull] OAuthIntrospectionOptions options)
             : base(next, options)
         {
-            if (string.IsNullOrEmpty(options.Authority) &&
-                string.IsNullOrEmpty(options.IntrospectionEndpoint))
-            {
-                throw new ArgumentException("The authority or the introspection endpoint must be configured.", nameof(options));
-            }
-
-            if (string.IsNullOrEmpty(options.ClientId) ||
-                string.IsNullOrEmpty(options.ClientSecret))
+            if (string.IsNullOrEmpty(options.ClientId) ||string.IsNullOrEmpty(options.ClientSecret))
             {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }
@@ -90,6 +84,64 @@ namespace Owin.Security.OAuth.Introspection
                 };
 
                 options.HttpClient.DefaultRequestHeaders.UserAgent.ParseAdd("OWIN OAuth2 introspection middleware");
+            }
+
+            if (Options.ConfigurationManager == null)
+            {
+                if (Options.Configuration != null)
+                {
+                    if (string.IsNullOrEmpty(Options.Configuration.IntrospectionEndpoint))
+                    {
+                        throw new ArgumentException("The introspection endpoint address cannot be null or empty.", nameof(options));
+                    }
+
+                    Options.ConfigurationManager = new StaticConfigurationManager<OAuthIntrospectionConfiguration>(Options.Configuration);
+                }
+
+                else
+                {
+                    if (Options.Authority == null && Options.MetadataAddress == null)
+                    {
+                        throw new ArgumentException("The authority or an absolute metadata endpoint address must be provided.", nameof(options));
+                    }
+
+                    if (Options.MetadataAddress == null)
+                    {
+                        Options.MetadataAddress = new Uri(".well-known/openid-configuration", UriKind.Relative);
+                    }
+
+                    if (!Options.MetadataAddress.IsAbsoluteUri)
+                    {
+                        if (Options.Authority == null || !Options.Authority.IsAbsoluteUri)
+                        {
+                            throw new ArgumentException("The authority must be provided and must be an absolute URL.", nameof(options));
+                        }
+
+                        if (!string.IsNullOrEmpty(Options.Authority.Fragment) || !string.IsNullOrEmpty(Options.Authority.Query))
+                        {
+                            throw new ArgumentException("The authority cannot contain a fragment or a query string.", nameof(options));
+                        }
+
+                        if (!Options.Authority.OriginalString.EndsWith("/"))
+                        {
+                            Options.Authority = new Uri(Options.Authority.OriginalString + "/", UriKind.Absolute);
+                        }
+
+                        Options.MetadataAddress = new Uri(Options.Authority, Options.MetadataAddress);
+                    }
+
+                    if (Options.RequireHttpsMetadata && !Options.MetadataAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new ArgumentException("The metadata endpoint address must be a HTTPS URL when " +
+                                                    "'RequireHttpsMetadata' is not set to 'false'.", nameof(options));
+                    }
+
+                    Options.ConfigurationManager = new ConfigurationManager<OAuthIntrospectionConfiguration>(
+                        Options.MetadataAddress.AbsoluteUri, new OAuthIntrospectionConfiguration.Retriever(),
+                        (IDocumentRetriever) Activator.CreateInstance(
+                            type: typeof(OpenIdConnectConfiguration).Assembly.GetType("Microsoft.IdentityModel.Protocols.HttpDocumentRetriever"),
+                            args: Options.HttpClient));
+                }
             }
         }
 
