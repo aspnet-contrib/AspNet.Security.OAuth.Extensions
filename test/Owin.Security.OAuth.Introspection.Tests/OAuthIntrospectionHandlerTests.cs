@@ -124,8 +124,8 @@ namespace Owin.Security.OAuth.Introspection.Tests
             // Arrange
             var server = CreateResourceServer(options =>
             {
+                options.Audiences.Add("http://www.contoso.com/");
                 options.Audiences.Add("http://www.fabrikam.com/");
-                options.Audiences.Add("http://www.google.com/");
             });
 
             var client = server.HttpClient;
@@ -220,24 +220,17 @@ namespace Owin.Security.OAuth.Introspection.Tests
             var response = await client.SendAsync(request);
 
             var ticket = JObject.Parse(await response.Content.ReadAsStringAsync());
-            var claims = from claim in ticket.Value<JArray>("Claims")
-                         select new
-                         {
-                             Type = claim.Value<string>(nameof(Claim.Type)),
-                             Value = claim.Value<string>(nameof(Claim.Value))
-                         };
+            var claims = ticket.Value<JArray>("Claims").Select(claim => new
+            {
+                Type = claim.Value<string>(nameof(Claim.Type)),
+                Value = claim.Value<string>(nameof(Claim.Value))
+            });
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            Assert.Contains(claims, claim => claim.Type == ClaimTypes.NameIdentifier &&
-                                             claim.Value == "Fabrikam");
-
-            Assert.Contains(claims, claim => claim.Type == OAuthIntrospectionConstants.Claims.Scope &&
-                                             claim.Value == "C54A8F5E-0387-43F4-BA43-FD4B50DC190D");
-
-            Assert.Contains(claims, claim => claim.Type == OAuthIntrospectionConstants.Claims.Scope &&
-                                             claim.Value == "5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7");
+            Assert.Contains(new { Type = OAuthIntrospectionConstants.Claims.Subject, Value = "Fabrikam" }, claims);
+            Assert.Contains(new { Type = OAuthIntrospectionConstants.Claims.Scope, Value = "openid" }, claims);
+            Assert.Contains(new { Type = OAuthIntrospectionConstants.Claims.Scope, Value = "profile" }, claims);
         }
 
         [Fact]
@@ -387,7 +380,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                 options.Events.OnRetrieveToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                    identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Fabrikam"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
 
@@ -472,7 +465,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                 options.Events.OnValidateToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                    identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Contoso"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
@@ -503,7 +496,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                 options.Events.OnValidateToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                    identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Contoso"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
@@ -746,7 +739,15 @@ namespace Owin.Security.OAuth.Introspection.Tests
                         return Task.FromResult(0);
                     }
 
-                    return context.Response.WriteAsync(context.Authentication.User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                    var subject = context.Authentication.User.FindFirst(OAuthIntrospectionConstants.Claims.Subject)?.Value;
+                    if (string.IsNullOrEmpty(subject))
+                    {
+                        context.Authentication.Challenge();
+
+                        return Task.FromResult(0);
+                    }
+
+                    return context.Response.WriteAsync(subject);
                 });
             });
         }
@@ -818,8 +819,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
-                                payload[OAuthIntrospectionConstants.Claims.Scope] =
-                                    "C54A8F5E-0387-43F4-BA43-FD4B50DC190D 5C57E3BD-9EFB-4224-9AB8-C8C5E009FFD7";
+                                payload[OAuthIntrospectionConstants.Claims.Scope] = "openid profile";
 
                                 break;
                             }
@@ -829,7 +829,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
-                                payload[OAuthIntrospectionConstants.Claims.Audience] = "http://www.google.com/";
+                                payload[OAuthIntrospectionConstants.Claims.Audience] = "http://www.contoso.com/";
 
                                 break;
                             }
@@ -841,7 +841,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
                                 payload[OAuthIntrospectionConstants.Claims.Audience] = JArray.FromObject(new[]
                                 {
-                                    "http://www.google.com/", "http://www.fabrikam.com/"
+                                    "http://www.contoso.com/", "http://www.fabrikam.com/"
                                 });
 
                                 break;

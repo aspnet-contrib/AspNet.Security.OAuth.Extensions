@@ -4,6 +4,7 @@
  * concerning the license and the contributors participating to this project.
  */
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -26,7 +27,7 @@ namespace AspNet.Security.OAuth.Validation
         /// Setting this property is recommended when the authorization
         /// server issues access tokens for multiple distinct resource servers.
         /// </summary>
-        public ISet<string> Audiences { get; } = new HashSet<string>();
+        public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
 
         /// <summary>
         /// Gets or sets the optional "realm" value returned to

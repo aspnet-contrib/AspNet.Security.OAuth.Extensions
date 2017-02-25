@@ -7,6 +7,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
@@ -391,7 +393,35 @@ namespace Owin.Security.OAuth.Introspection
                 return null;
             }
 
-            return JObject.Parse(await response.Content.ReadAsStringAsync());
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            {
+                // Limit the maximum depth to prevent stack overflow exceptions from
+                // being thrown when receiving deeply nested introspection responses.
+                reader.MaxDepth = 20;
+
+                try
+                {
+                    var payload = JObject.Load(reader);
+
+                    Options.Logger.LogInformation("The introspection response was successfully extracted: {Response}.", payload);
+
+                    return payload;
+                }
+
+                // Swallow the known exceptions thrown by JSON.NET.
+                catch (Exception exception) when (exception is ArgumentException ||
+                                                  exception is FormatException ||
+                                                  exception is InvalidCastException ||
+                                                  exception is JsonReaderException ||
+                                                  exception is JsonSerializationException)
+                {
+                    Options.Logger.LogError("An error occurred while deserializing the " +
+                                            "introspection response: {Exception}.", exception);
+
+                    return null;
+                }
+            }
         }
 
         protected virtual bool ValidateAudience(AuthenticationTicket ticket)
@@ -435,9 +465,19 @@ namespace Owin.Security.OAuth.Introspection
 
             foreach (var property in payload.Properties())
             {
+                // Always exclude null values, as they can't be represented as valid claims.
+                if (property.Value.Type == JTokenType.None || property.Value.Type == JTokenType.Null)
+                {
+                    Options.Logger.LogInformation("The '{Claim}' claim was excluded because it was null.", property.Name);
+
+                    continue;
+                }
+
+                // When the claim correspond to a protocol claim, store it as an
+                // authentication property instead of adding it as a proper claim.
                 switch (property.Name)
                 {
-                    // Ignore the unwanted claims.
+                    // Always exclude the unwanted protocol claims.
                     case OAuthIntrospectionConstants.Claims.Active:
                     case OAuthIntrospectionConstants.Claims.TokenType:
                     case OAuthIntrospectionConstants.Claims.NotBefore:
@@ -445,55 +485,80 @@ namespace Owin.Security.OAuth.Introspection
 
                     case OAuthIntrospectionConstants.Claims.IssuedAt:
                     {
+                        // Note: the iat claim must be a numeric date value.
+                        // See https://tools.ietf.org/html/rfc7662#section-2.2
+                        // and https://tools.ietf.org/html/rfc7519#section-4.1.6 for more information.
+                        if (property.Value.Type != JTokenType.Float && property.Value.Type != JTokenType.Integer)
+                        {
+                            Options.Logger.LogWarning("The 'iat' claim was ignored because it was not a decimal value.");
+
+                            continue;
+                        }
+
                         properties.IssuedUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
-                                               TimeSpan.FromSeconds((long) property.Value);
+                                               TimeSpan.FromSeconds((double) property.Value);
+
                         continue;
                     }
 
                     case OAuthIntrospectionConstants.Claims.ExpiresAt:
                     {
+                        // Note: the exp claim must be a numeric date value.
+                        // See https://tools.ietf.org/html/rfc7662#section-2.2
+                        // and https://tools.ietf.org/html/rfc7519#section-4.1.4 for more information.
+                        if (property.Value.Type != JTokenType.Float && property.Value.Type != JTokenType.Integer)
+                        {
+                            Options.Logger.LogWarning("The 'exp' claim was ignored because it was not a decimal value.");
+
+                            continue;
+                        }
+
                         properties.ExpiresUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
-                                                TimeSpan.FromSeconds((long) property.Value);
+                                                TimeSpan.FromSeconds((double) property.Value);
 
                         continue;
                     }
 
-                    // Add the subject identifier as a new ClaimTypes.NameIdentifier claim.
-                    case OAuthIntrospectionConstants.Claims.Subject:
-                    {
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, (string) property.Value));
-
-                        continue;
-                    }
-
-                    // Add the subject identifier as a new ClaimTypes.Name claim.
-                    case OAuthIntrospectionConstants.Claims.Username:
-                    {
-                        identity.AddClaim(new Claim(ClaimTypes.Name, (string) property.Value));
-
-                        continue;
-                    }
-
-                    // Add the token identifier as a property on the authentication ticket.
                     case OAuthIntrospectionConstants.Claims.JwtId:
                     {
+                        // Note: the jti claim must be a string value.
+                        // See https://tools.ietf.org/html/rfc7662#section-2.2
+                        // and https://tools.ietf.org/html/rfc7519#section-4.1.7 for more information.
+                        if (property.Value.Type != JTokenType.String)
+                        {
+                            Options.Logger.LogWarning("The 'jti' claim was ignored because it was not a string value.");
+
+                            continue;
+                        }
+
                         properties.Dictionary[OAuthIntrospectionConstants.Properties.TicketId] = (string) property;
 
                         continue;
                     }
 
-                    // Extract the scope values from the space-delimited
-                    // "scope" claim and store them as individual claims.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.2
                     case OAuthIntrospectionConstants.Claims.Scope:
                     {
-                        var scopes = (string) property.Value;
+                        // Note: the scope claim must be a space-separated string value.
+                        // See https://tools.ietf.org/html/rfc7662#section-2.2
+                        // and https://tools.ietf.org/html/rfc7519#section-4.1.7 for more information.
+                        if (property.Value.Type != JTokenType.String)
+                        {
+                            Options.Logger.LogWarning("The 'scope' claim was ignored because it was not a string value.");
 
-                        // Store the scopes list in the authentication properties.
+                            continue;
+                        }
+
+                        var scopes = ((string) property.Value).Split(
+                            OAuthIntrospectionConstants.Separators.Space,
+                            StringSplitOptions.RemoveEmptyEntries);
+
+                        // Note: the OpenID Connect extensions require storing the scopes
+                        // as an array of strings, even if there's only element in the array.
                         properties.Dictionary[OAuthIntrospectionConstants.Properties.Scopes] =
-                            new JArray(scopes.Split(' ')).ToString(Formatting.None);
+                            new JArray(scopes).ToString(Formatting.None);
 
-                        foreach (var scope in scopes.Split(' '))
+                        // For convenience, also store the scopes as individual claims.
+                        foreach (var scope in scopes)
                         {
                             identity.AddClaim(new Claim(property.Name, scope));
                         }
@@ -501,59 +566,114 @@ namespace Owin.Security.OAuth.Introspection
                         continue;
                     }
 
-                    // Store the audience(s) in the ticket properties.
-                    // Note: the "aud" claim may be either a list of strings or a unique string.
-                    // See https://tools.ietf.org/html/rfc7662#section-2.2
                     case OAuthIntrospectionConstants.Claims.Audience:
                     {
-                        if (property.Value.Type == JTokenType.Array)
+                        // Note: the aud claim must be either a string value or an array of strings.
+                        // See https://tools.ietf.org/html/rfc7662#section-2.2
+                        // and https://tools.ietf.org/html/rfc7519#section-4.1.4 for more information.
+                        if (property.Value.Type == JTokenType.String)
                         {
-                            var value = (JArray) property.Value;
-                            if (value == null)
+                            // Note: the OpenID Connect extensions require storing the audiences
+                            // as an array of strings, even if there's only element in the array.
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] =
+                                new JArray((string) property.Value).ToString(Formatting.None);
+
+                            continue;
+                        }
+
+                        else if (property.Value.Type == JTokenType.Array)
+                        {
+                            // Ensure all the array values are valid strings.
+                            var audiences = (JArray) property.Value;
+                            if (audiences.Any(audience => audience.Type != JTokenType.String))
                             {
+                                Options.Logger.LogWarning("The 'aud' claim was ignored because it was not an array of strings.");
+
                                 continue;
                             }
 
-                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] = value.ToString(Formatting.None);
+                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] =
+                                property.Value.ToString(Formatting.None);
+
+                            continue;
                         }
 
-                        else if (property.Value.Type == JTokenType.String)
-                        {
-                            properties.Dictionary[OAuthIntrospectionConstants.Properties.Audiences] =
-                                new JArray((string) property.Value).ToString(Formatting.None);
-                        }
+                        Options.Logger.LogWarning("The 'aud' claim was ignored because it was not a string nor an array.");
 
                         continue;
                     }
                 }
 
+                // If the claim is not a known claim, add it as-is by
+                // trying to determine what's the best claim value type.
                 switch (property.Value.Type)
                 {
-                    // Ignore null values.
-                    case JTokenType.None:
-                    case JTokenType.Null:
+                    case JTokenType.String:
+                        identity.AddClaim(new Claim(property.Name, (string) property.Value, ClaimValueTypes.String));
+                        continue;
+
+                    case JTokenType.Integer:
+                        identity.AddClaim(new Claim(property.Name, (string) property.Value, ClaimValueTypes.Integer));
+                        continue;
+
+                    case JTokenType.Float:
+                        identity.AddClaim(new Claim(property.Name, (string) property.Value, ClaimValueTypes.Double));
                         continue;
 
                     case JTokenType.Array:
                     {
-                        foreach (var item in (JArray) property.Value)
+                        // When the claim is an array, add the corresponding items
+                        // as individual claims using the name assigned to the array.
+                        foreach (var value in (JArray) property.Value)
                         {
-                            identity.AddClaim(new Claim(property.Name, (string) item));
+                            switch (value.Type)
+                            {
+                                case JTokenType.None:
+                                case JTokenType.Null:
+                                    continue;
+
+                                case JTokenType.String:
+                                    identity.AddClaim(new Claim(property.Name, (string) value, ClaimValueTypes.String));
+                                    continue;
+
+                                case JTokenType.Integer:
+                                    identity.AddClaim(new Claim(property.Name, (string) value, ClaimValueTypes.Integer));
+                                    continue;
+
+                                case JTokenType.Float:
+                                    identity.AddClaim(new Claim(property.Name, (string) value, ClaimValueTypes.Double));
+                                    continue;
+
+                                case JTokenType.Array:
+                                {
+                                    // When the array element is itself a new array, serialize it as-it.
+                                    identity.AddClaim(new Claim(property.Name, value.ToString(Formatting.None),
+                                        OAuthIntrospectionConstants.ClaimValueTypes.JsonArray));
+
+                                    continue;
+                                }
+
+                                default:
+                                {
+                                    // When the array element doesn't correspond to a supported
+                                    // primitive type (e.g a complex object), serialize it as-it.
+                                    identity.AddClaim(new Claim(property.Name, value.ToString(Formatting.None),
+                                        OAuthIntrospectionConstants.ClaimValueTypes.Json));
+
+                                    continue;
+                                }
+                            }
                         }
 
                         continue;
                     }
 
-                    case JTokenType.String:
+                    default:
                     {
-                        identity.AddClaim(new Claim(property.Name, (string) property.Value));
-
-                        continue;
-                    }
-
-                    case JTokenType.Integer:
-                    {
-                        identity.AddClaim(new Claim(property.Name, (string) property.Value, ClaimValueTypes.Integer));
+                        // When the array element doesn't correspond to a supported
+                        // primitive type (e.g a complex object), serialize it as-it.
+                        identity.AddClaim(new Claim(property.Name, property.Value.ToString(Formatting.None),
+                            OAuthIntrospectionConstants.ClaimValueTypes.Json));
 
                         continue;
                     }

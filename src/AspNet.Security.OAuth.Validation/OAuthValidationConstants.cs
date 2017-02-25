@@ -11,6 +11,7 @@ namespace AspNet.Security.OAuth.Validation
         public static class Claims
         {
             public const string Scope = "scope";
+            public const string Subject = "subject";
         }
 
         public static class Errors

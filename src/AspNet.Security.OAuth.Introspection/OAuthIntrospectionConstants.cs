@@ -24,6 +24,12 @@ namespace AspNet.Security.OAuth.Introspection
             public const string Username = "username";
         }
 
+        public static class ClaimValueTypes
+        {
+            public const string Json = "JSON";
+            public const string JsonArray = "JSON_ARRAY";
+        }
+
         public static class Errors
         {
             public const string InsufficientScope = "insufficient_scope";
@@ -63,6 +69,11 @@ namespace AspNet.Security.OAuth.Introspection
         public static class Schemes
         {
             public const string Bearer = "Bearer";
+        }
+
+        public static class Separators
+        {
+            public static readonly char[] Space = { ' ' };
         }
 
         public static class TokenTypes

@@ -32,6 +32,13 @@ namespace Owin.Security.OAuth.Introspection
         public Uri Authority { get; set; }
 
         /// <summary>
+        /// Gets the intended audiences of this resource server.
+        /// Setting this property is recommended when the authorization
+        /// server issues access tokens for multiple distinct resource servers.
+        /// </summary>
+        public ISet<string> Audiences { get; } = new HashSet<string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// Gets or sets the URL of the OAuth2/OpenID Connect server discovery endpoint.
         /// When the URL is relative, <see cref="Authority"/> must be set and absolute.
         /// Note: this property is ignored when <see cref="Configuration"/>
@@ -75,13 +82,6 @@ namespace Owin.Security.OAuth.Introspection
         public string Realm { get; set; }
 
         /// <summary>
-        /// Gets the intended audiences of this resource server.
-        /// Setting this property is recommended when the authorization
-        /// server issues access tokens for multiple distinct resource servers.
-        /// </summary>
-        public ISet<string> Audiences { get; } = new HashSet<string>();
-
-        /// <summary>
         /// Gets or sets a boolean determining whether the access token should be stored in the
         /// <see cref="AuthenticationProperties"/> after a successful authentication process.
         /// </summary>
@@ -96,11 +96,14 @@ namespace Owin.Security.OAuth.Introspection
 
         /// <summary>
         /// Gets or sets the claim type used for the name claim.
+        /// By default, the standard <see cref="OAuthIntrospectionConstants.Claims.Name"/>
+        /// claim defined by the OAuth2 introspection specification is used.
         /// </summary>
         public string NameClaimType { get; set; } = OAuthIntrospectionConstants.Claims.Name;
 
         /// <summary>
         /// Gets or sets the claim type used for the role claim(s).
+        /// By default, <see cref="OAuthIntrospectionConstants.Claims.Role"/> is used.
         /// </summary>
         public string RoleClaimType { get; set; } = OAuthIntrospectionConstants.Claims.Role;
 

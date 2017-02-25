@@ -28,7 +28,7 @@ namespace Owin.Security.OAuth.Introspection
             [NotNull] OAuthIntrospectionOptions options)
             : base(next, options)
         {
-            if (string.IsNullOrEmpty(options.ClientId) ||string.IsNullOrEmpty(options.ClientSecret))
+            if (string.IsNullOrEmpty(options.ClientId) || string.IsNullOrEmpty(options.ClientSecret))
             {
                 throw new ArgumentException("Client credentials must be configured.", nameof(options));
             }

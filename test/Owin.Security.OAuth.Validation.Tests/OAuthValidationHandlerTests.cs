@@ -129,8 +129,8 @@ namespace Owin.Security.OAuth.Validation.Tests
             // Arrange
             var server = CreateResourceServer(options =>
             {
+                options.Audiences.Add("http://www.contoso.com/");
                 options.Audiences.Add("http://www.fabrikam.com/");
-                options.Audiences.Add("http://www.google.com/");
             });
 
             var client = server.HttpClient;
@@ -152,8 +152,8 @@ namespace Owin.Security.OAuth.Validation.Tests
             // Arrange
             var server = CreateResourceServer(options =>
             {
+                options.Audiences.Add("http://www.contoso.com/");
                 options.Audiences.Add("http://www.fabrikam.com/");
-                options.Audiences.Add("http://www.google.com/");
             });
 
             var client = server.HttpClient;
@@ -212,7 +212,7 @@ namespace Owin.Security.OAuth.Validation.Tests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-            Assert.Contains(claims, claim => claim.Type == ClaimTypes.NameIdentifier &&
+            Assert.Contains(claims, claim => claim.Type == OAuthValidationConstants.Claims.Subject &&
                                              claim.Value == "Fabrikam");
 
             Assert.Contains(claims, claim => claim.Type == OAuthValidationConstants.Claims.Scope &&
@@ -369,7 +369,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                 options.Events.OnRetrieveToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
 
@@ -454,7 +454,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                 options.Events.OnValidateToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Contoso"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
@@ -485,7 +485,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                 options.Events.OnValidateToken = context =>
                 {
                     var identity = new ClaimsIdentity(context.Options.AuthenticationType);
-                    identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Contoso"));
+                    identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Contoso"));
 
                     context.Ticket = new AuthenticationTicket(identity, new AuthenticationProperties());
                     context.HandleResponse();
@@ -663,7 +663,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                   .Returns(delegate
                   {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
-                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                      identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       return new AuthenticationTicket(identity, new AuthenticationProperties());
                   });
@@ -672,7 +672,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                   .Returns(delegate
                   {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
-                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                      identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
                       properties.Dictionary[OAuthValidationConstants.Properties.Scopes] =
@@ -685,11 +685,11 @@ namespace Owin.Security.OAuth.Validation.Tests
                   .Returns(delegate
                   {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
-                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                      identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string>
                       {
-                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/""]"
+                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.contoso.com/""]"
                       });
 
                       return new AuthenticationTicket(identity, properties);
@@ -699,11 +699,11 @@ namespace Owin.Security.OAuth.Validation.Tests
                   .Returns(delegate
                   {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
-                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                      identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties(new Dictionary<string, string>
                       {
-                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.google.com/"",""http://www.fabrikam.com/""]"
+                          [OAuthValidationConstants.Properties.Audiences] = @"[""http://www.contoso.com/"",""http://www.fabrikam.com/""]"
                       });
 
                       return new AuthenticationTicket(identity, properties);
@@ -713,7 +713,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                   .Returns(delegate
                   {
                       var identity = new ClaimsIdentity(OAuthValidationDefaults.AuthenticationScheme);
-                      identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "Fabrikam"));
+                      identity.AddClaim(new Claim(OAuthValidationConstants.Claims.Subject, "Fabrikam"));
 
                       var properties = new AuthenticationProperties();
                       properties.ExpiresUtc = DateTimeOffset.UtcNow - TimeSpan.FromDays(1);
@@ -787,7 +787,7 @@ namespace Owin.Security.OAuth.Validation.Tests
                         return Task.FromResult(0);
                     }
 
-                    var identifier = context.Authentication.User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                    var identifier = context.Authentication.User.FindFirst(OAuthValidationConstants.Claims.Subject).Value;
                     return context.Response.WriteAsync(identifier);
                 });
             });
