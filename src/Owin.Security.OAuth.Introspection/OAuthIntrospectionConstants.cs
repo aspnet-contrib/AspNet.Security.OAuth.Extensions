@@ -15,7 +15,9 @@ namespace Owin.Security.OAuth.Introspection
             public const string ExpiresAt = "exp";
             public const string IssuedAt = "iat";
             public const string JwtId = "jti";
+            public const string Name = "name";
             public const string NotBefore = "nbf";
+            public const string Role = "role";
             public const string Scope = "scope";
             public const string Subject = "sub";
             public const string TokenType = "token_type";

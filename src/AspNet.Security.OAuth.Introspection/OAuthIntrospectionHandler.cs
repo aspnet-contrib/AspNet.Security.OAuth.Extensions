@@ -435,7 +435,7 @@ namespace AspNet.Security.OAuth.Introspection
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload)
         {
-            var identity = new ClaimsIdentity(Options.AuthenticationScheme);
+            var identity = new ClaimsIdentity(Options.AuthenticationScheme, Options.NameClaimType, Options.RoleClaimType);
             var properties = new AuthenticationProperties();
 
             if (Options.SaveToken)
@@ -479,22 +479,6 @@ namespace AspNet.Security.OAuth.Introspection
                         properties.ExpiresUtc = new DateTimeOffset(1970, 1, 1, 0, 0, 0, 0, TimeSpan.Zero) +
                                                 TimeSpan.FromSeconds((long) property.Value);
 #endif
-
-                        continue;
-                    }
-
-                    // Add the subject identifier as a new ClaimTypes.NameIdentifier claim.
-                    case OAuthIntrospectionConstants.Claims.Subject:
-                    {
-                        identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, (string) property.Value));
-
-                        continue;
-                    }
-
-                    // Add the subject identifier as a new ClaimTypes.Name claim.
-                    case OAuthIntrospectionConstants.Claims.Username:
-                    {
-                        identity.AddClaim(new Claim(ClaimTypes.Name, (string) property.Value));
 
                         continue;
                     }

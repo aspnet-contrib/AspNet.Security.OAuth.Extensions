@@ -95,6 +95,16 @@ namespace Owin.Security.OAuth.Introspection
         public bool IncludeErrorDetails { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the claim type used for the name claim.
+        /// </summary>
+        public string NameClaimType { get; set; } = OAuthIntrospectionConstants.Claims.Name;
+
+        /// <summary>
+        /// Gets or sets the claim type used for the role claim(s).
+        /// </summary>
+        public string RoleClaimType { get; set; } = OAuthIntrospectionConstants.Claims.Role;
+
+        /// <summary>
         /// Gets or sets the cache used to store the authentication tickets
         /// resolved from the access tokens received by the resource server.
         /// </summary>

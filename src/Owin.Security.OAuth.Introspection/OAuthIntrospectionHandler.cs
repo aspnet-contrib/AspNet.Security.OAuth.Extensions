@@ -424,7 +424,7 @@ namespace Owin.Security.OAuth.Introspection
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload)
         {
-            var identity = new ClaimsIdentity(Options.AuthenticationType);
+            var identity = new ClaimsIdentity(Options.AuthenticationType, Options.NameClaimType, Options.RoleClaimType);
             var properties = new AuthenticationProperties();
 
             if (Options.SaveToken)
