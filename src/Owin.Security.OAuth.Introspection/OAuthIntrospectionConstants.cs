@@ -30,6 +30,12 @@ namespace Owin.Security.OAuth.Introspection
             public const string JsonArray = "JSON_ARRAY";
         }
 
+        public static class ClientAuthenticationMethods
+        {
+            public const string ClientSecretBasic = "client_secret_basic";
+            public const string ClientSecretPost = "client_secret_post";
+        }
+
         public static class Errors
         {
             public const string InsufficientScope = "insufficient_scope";
@@ -46,10 +52,13 @@ namespace Owin.Security.OAuth.Introspection
         public static class Metadata
         {
             public const string IntrospectionEndpoint = "introspection_endpoint";
+            public const string IntrospectionEndpointAuthMethodsSupported = "introspection_endpoint_auth_methods_supported";
         }
 
         public static class Parameters
         {
+            public const string ClientId = "client_id";
+            public const string ClientSecret = "client_secret";
             public const string Error = "error";
             public const string ErrorDescription = "error_description";
             public const string ErrorUri = "error_uri";
@@ -74,6 +83,7 @@ namespace Owin.Security.OAuth.Introspection
 
         public static class Schemes
         {
+            public const string Basic = "Basic";
             public const string Bearer = "Bearer";
         }
 
@@ -82,7 +92,7 @@ namespace Owin.Security.OAuth.Introspection
             public static readonly char[] Space = { ' ' };
         }
 
-        public static class TokenTypes
+        public static class TokenTypeHints
         {
             public const string AccessToken = "access_token";
         }

@@ -365,18 +365,39 @@ namespace Owin.Security.OAuth.Introspection
                                                     "the introspection endpoint address from the discovery document.");
             }
 
-            var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Options.ClientId}:{Options.ClientSecret}"));
-
             // Create a new introspection request containing the access token and the client credentials.
             var request = new HttpRequestMessage(HttpMethod.Post, configuration.IntrospectionEndpoint);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
-            request.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            // Note: always specify the token_type_hint to help
+            // the authorization server make a faster token lookup.
+            var parameters = new Dictionary<string, string>
             {
                 [OAuthIntrospectionConstants.Parameters.Token] = token,
-                [OAuthIntrospectionConstants.Parameters.TokenTypeHint] = OAuthIntrospectionConstants.TokenTypes.AccessToken
-            });
+                [OAuthIntrospectionConstants.Parameters.TokenTypeHint] = OAuthIntrospectionConstants.TokenTypeHints.AccessToken
+            };
+
+            // If the introspection endpoint provided by the authorization server supports
+            // client_secret_post, flow the client credentials as regular OAuth2 parameters.
+            // See https://tools.ietf.org/html/draft-ietf-oauth-discovery-05#section-2
+            // and https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
+            if (configuration.IntrospectionEndpointAuthMethodsSupported.Contains(OAuthIntrospectionConstants.ClientAuthenticationMethods.ClientSecretPost))
+            {
+                parameters[OAuthIntrospectionConstants.Parameters.ClientId] = Options.ClientId;
+                parameters[OAuthIntrospectionConstants.Parameters.ClientSecret] = Options.ClientSecret;
+            }
+
+            // Otherwise, assume the authorization server only supports basic authentication,
+            // as it's the only authentication method required by the OAuth2 specification.
+            // See https://tools.ietf.org/html/rfc6749#section-2.3.1 for more information.
+            else
+            {
+                var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{Options.ClientId}:{Options.ClientSecret}"));
+
+                request.Headers.Authorization = new AuthenticationHeaderValue(OAuthIntrospectionConstants.Schemes.Basic, credentials);
+            }
+
+            request.Content = new FormUrlEncodedContent(parameters);
 
             var notification = new RequestTokenIntrospectionContext(Context, Options, request, token);
             await Options.Events.RequestTokenIntrospection(notification);

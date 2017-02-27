@@ -5,6 +5,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -43,6 +44,15 @@ namespace Owin.Security.OAuth.Introspection
             NullValueHandling = NullValueHandling.Ignore,
             PropertyName = OAuthIntrospectionConstants.Metadata.IntrospectionEndpoint)]
         public string IntrospectionEndpoint { get; set; }
+
+        /// <summary>
+        /// Gets the list of authentication methods supported by the introspection endpoint.
+        /// </summary>
+        [JsonProperty(
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+            PropertyName = OAuthIntrospectionConstants.Metadata.IntrospectionEndpointAuthMethodsSupported)]
+        public ISet<string> IntrospectionEndpointAuthMethodsSupported { get; } = new HashSet<string>();
 
         /// <summary>
         /// Represents a configuration retriever able to deserialize
