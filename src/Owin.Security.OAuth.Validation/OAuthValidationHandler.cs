@@ -28,7 +28,7 @@ namespace Owin.Security.OAuth.Validation
                 // indicate that authentication was rejected by application code.
                 if (context.Ticket == null)
                 {
-                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+                    Logger.LogInformation("Authentication was stopped by application code.");
 
                     return null;
                 }
@@ -38,7 +38,7 @@ namespace Owin.Security.OAuth.Validation
 
             else if (context.Skipped)
             {
-                Options.Logger.LogInformation("Authentication was skipped by application code.");
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
@@ -51,7 +51,7 @@ namespace Owin.Security.OAuth.Validation
                 var header = Request.Headers[OAuthValidationConstants.Headers.Authorization];
                 if (string.IsNullOrEmpty(header))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because no bearer token was received.");
+                    Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
                     return null;
                 }
@@ -60,8 +60,8 @@ namespace Owin.Security.OAuth.Validation
                 // See https://tools.ietf.org/html/rfc6750#section-2.1
                 if (!header.StartsWith(OAuthValidationConstants.Schemes.Bearer + ' ', StringComparison.OrdinalIgnoreCase))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because an incompatible " +
-                                            "scheme was used in the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because an incompatible " +
+                                    "scheme was used in the 'Authorization' header.");
 
                     return null;
                 }
@@ -71,8 +71,8 @@ namespace Owin.Security.OAuth.Validation
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because the bearer token " +
-                                            "was missing from the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because the bearer token " +
+                                    "was missing from the 'Authorization' header.");
 
                     return null;
                 }
@@ -83,7 +83,7 @@ namespace Owin.Security.OAuth.Validation
             var ticket = await CreateTicketAsync(token);
             if (ticket == null)
             {
-                Options.Logger.LogError("Authentication failed because the access token was invalid.");
+                Logger.LogError("Authentication failed because the access token was invalid.");
 
                 Context.Set(typeof(OAuthValidationError).FullName, new OAuthValidationError
                 {
@@ -98,8 +98,8 @@ namespace Owin.Security.OAuth.Validation
             // to be used with this resource server.
             if (!ValidateAudience(ticket))
             {
-                Options.Logger.LogError("Authentication failed because the access token " +
-                                        "was not valid for this resource server.");
+                Logger.LogError("Authentication failed because the access token " +
+                                "was not valid for this resource server.");
 
                 Context.Set(typeof(OAuthValidationError).FullName, new OAuthValidationError
                 {
@@ -114,7 +114,7 @@ namespace Owin.Security.OAuth.Validation
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
             {
-                Options.Logger.LogError("Authentication failed because the access token was expired.");
+                Logger.LogError("Authentication failed because the access token was expired.");
 
                 Context.Set(typeof(OAuthValidationError).FullName, new OAuthValidationError
                 {
@@ -134,7 +134,7 @@ namespace Owin.Security.OAuth.Validation
                 // indicate that authentication was rejected by application code.
                 if (notification.Ticket == null)
                 {
-                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+                    Logger.LogInformation("Authentication was stopped by application code.");
 
                     return null;
                 }
@@ -144,7 +144,7 @@ namespace Owin.Security.OAuth.Validation
 
             else if (notification.Skipped)
             {
-                Options.Logger.LogInformation("Authentication was skipped by application code.");
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
@@ -403,5 +403,7 @@ namespace Owin.Security.OAuth.Validation
 
             return notification.Ticket;
         }
+
+        public ILogger Logger => Options.Logger;
     }
 }

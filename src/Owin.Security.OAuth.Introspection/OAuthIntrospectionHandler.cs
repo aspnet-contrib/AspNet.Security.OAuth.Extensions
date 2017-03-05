@@ -36,7 +36,7 @@ namespace Owin.Security.OAuth.Introspection
                 // indicate that authentication was rejected by application code.
                 if (context.Ticket == null)
                 {
-                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+                    Logger.LogInformation("Authentication was stopped by application code.");
 
                     return null;
                 }
@@ -46,7 +46,7 @@ namespace Owin.Security.OAuth.Introspection
 
             else if (context.Skipped)
             {
-                Options.Logger.LogInformation("Authentication was skipped by application code.");
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
@@ -59,7 +59,7 @@ namespace Owin.Security.OAuth.Introspection
                 var header = Request.Headers[OAuthIntrospectionConstants.Headers.Authorization];
                 if (string.IsNullOrEmpty(header))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because no bearer token was received.");
+                    Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
                     return null;
                 }
@@ -68,8 +68,8 @@ namespace Owin.Security.OAuth.Introspection
                 // See https://tools.ietf.org/html/rfc6750#section-2.1
                 if (!header.StartsWith(OAuthIntrospectionConstants.Schemes.Bearer + ' ', StringComparison.OrdinalIgnoreCase))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because an incompatible " +
-                                            "scheme was used in the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because an incompatible " +
+                                    "scheme was used in the 'Authorization' header.");
 
                     return null;
                 }
@@ -79,8 +79,8 @@ namespace Owin.Security.OAuth.Introspection
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    Options.Logger.LogDebug("Authentication was skipped because the bearer token " +
-                                            "was missing from the 'Authorization' header.");
+                    Logger.LogDebug("Authentication was skipped because the bearer token " +
+                                    "was missing from the 'Authorization' header.");
 
                     return null;
                 }
@@ -96,8 +96,8 @@ namespace Owin.Security.OAuth.Introspection
                 var payload = await GetIntrospectionPayloadAsync(token);
                 if (payload == null || !payload.Value<bool>(OAuthIntrospectionConstants.Claims.Active))
                 {
-                    Options.Logger.LogError("Authentication failed because the authorization " +
-                                            "server rejected the access token.");
+                    Logger.LogError("Authentication failed because the authorization " +
+                                    "server rejected the access token.");
 
                     Context.Set(typeof(OAuthIntrospectionError).FullName, new OAuthIntrospectionError
                     {
@@ -120,7 +120,7 @@ namespace Owin.Security.OAuth.Introspection
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
             {
-                Options.Logger.LogError("Authentication failed because the access token was expired.");
+                Logger.LogError("Authentication failed because the access token was expired.");
 
                 Context.Set(typeof(OAuthIntrospectionError).FullName, new OAuthIntrospectionError
                 {
@@ -135,8 +135,8 @@ namespace Owin.Security.OAuth.Introspection
             // to be used with this resource server.
             if (!ValidateAudience(ticket))
             {
-                Options.Logger.LogError("Authentication failed because the access token " +
-                                        "was not valid for this resource server.");
+                Logger.LogError("Authentication failed because the access token " +
+                                "was not valid for this resource server.");
 
                 Context.Set(typeof(OAuthIntrospectionError).FullName, new OAuthIntrospectionError
                 {
@@ -156,7 +156,7 @@ namespace Owin.Security.OAuth.Introspection
                 // indicate that authentication was rejected by application code.
                 if (notification.Ticket == null)
                 {
-                    Options.Logger.LogInformation("Authentication was stopped by application code.");
+                    Logger.LogInformation("Authentication was stopped by application code.");
 
                     return null;
                 }
@@ -166,7 +166,7 @@ namespace Owin.Security.OAuth.Introspection
 
             else if (notification.Skipped)
             {
-                Options.Logger.LogInformation("Authentication was skipped by application code.");
+                Logger.LogInformation("Authentication was skipped by application code.");
 
                 return null;
             }
@@ -405,11 +405,11 @@ namespace Owin.Security.OAuth.Introspection
             var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Request.CallCancelled);
             if (!response.IsSuccessStatusCode)
             {
-                Options.Logger.LogError("An error occurred while validating an access token: the remote server " +
-                                        "returned a {Status} response with the following payload: {Headers} {Body}.",
-                                        /* Status: */ response.StatusCode,
-                                        /* Headers: */ response.Headers.ToString(),
-                                        /* Body: */ await response.Content.ReadAsStringAsync());
+                Logger.LogError("An error occurred while validating an access token: the remote server " +
+                                "returned a {Status} response with the following payload: {Headers} {Body}.",
+                                /* Status: */ response.StatusCode,
+                                /* Headers: */ response.Headers.ToString(),
+                                /* Body: */ await response.Content.ReadAsStringAsync());
 
                 return null;
             }
@@ -425,7 +425,7 @@ namespace Owin.Security.OAuth.Introspection
                 {
                     var payload = JObject.Load(reader);
 
-                    Options.Logger.LogInformation("The introspection response was successfully extracted: {Response}.", payload);
+                    Logger.LogInformation("The introspection response was successfully extracted: {Response}.", payload);
 
                     return payload;
                 }
@@ -437,8 +437,8 @@ namespace Owin.Security.OAuth.Introspection
                                                   exception is JsonReaderException ||
                                                   exception is JsonSerializationException)
                 {
-                    Options.Logger.LogError("An error occurred while deserializing the " +
-                                            "introspection response: {Exception}.", exception);
+                    Logger.LogError("An error occurred while deserializing the " +
+                                    "introspection response: {Exception}.", exception);
 
                     return null;
                 }
@@ -489,7 +489,7 @@ namespace Owin.Security.OAuth.Introspection
                 // Always exclude null values, as they can't be represented as valid claims.
                 if (property.Value.Type == JTokenType.None || property.Value.Type == JTokenType.Null)
                 {
-                    Options.Logger.LogInformation("The '{Claim}' claim was excluded because it was null.", property.Name);
+                    Logger.LogInformation("The '{Claim}' claim was excluded because it was null.", property.Name);
 
                     continue;
                 }
@@ -511,7 +511,7 @@ namespace Owin.Security.OAuth.Introspection
                         // and https://tools.ietf.org/html/rfc7519#section-4.1.6 for more information.
                         if (property.Value.Type != JTokenType.Float && property.Value.Type != JTokenType.Integer)
                         {
-                            Options.Logger.LogWarning("The 'iat' claim was ignored because it was not a decimal value.");
+                            Logger.LogWarning("The 'iat' claim was ignored because it was not a decimal value.");
 
                             continue;
                         }
@@ -529,7 +529,7 @@ namespace Owin.Security.OAuth.Introspection
                         // and https://tools.ietf.org/html/rfc7519#section-4.1.4 for more information.
                         if (property.Value.Type != JTokenType.Float && property.Value.Type != JTokenType.Integer)
                         {
-                            Options.Logger.LogWarning("The 'exp' claim was ignored because it was not a decimal value.");
+                            Logger.LogWarning("The 'exp' claim was ignored because it was not a decimal value.");
 
                             continue;
                         }
@@ -547,7 +547,7 @@ namespace Owin.Security.OAuth.Introspection
                         // and https://tools.ietf.org/html/rfc7519#section-4.1.7 for more information.
                         if (property.Value.Type != JTokenType.String)
                         {
-                            Options.Logger.LogWarning("The 'jti' claim was ignored because it was not a string value.");
+                            Logger.LogWarning("The 'jti' claim was ignored because it was not a string value.");
 
                             continue;
                         }
@@ -564,7 +564,7 @@ namespace Owin.Security.OAuth.Introspection
                         // and https://tools.ietf.org/html/rfc7519#section-4.1.7 for more information.
                         if (property.Value.Type != JTokenType.String)
                         {
-                            Options.Logger.LogWarning("The 'scope' claim was ignored because it was not a string value.");
+                            Logger.LogWarning("The 'scope' claim was ignored because it was not a string value.");
 
                             continue;
                         }
@@ -608,7 +608,7 @@ namespace Owin.Security.OAuth.Introspection
                             var audiences = (JArray) property.Value;
                             if (audiences.Any(audience => audience.Type != JTokenType.String))
                             {
-                                Options.Logger.LogWarning("The 'aud' claim was ignored because it was not an array of strings.");
+                                Logger.LogWarning("The 'aud' claim was ignored because it was not an array of strings.");
 
                                 continue;
                             }
@@ -619,7 +619,7 @@ namespace Owin.Security.OAuth.Introspection
                             continue;
                         }
 
-                        Options.Logger.LogWarning("The 'aud' claim was ignored because it was not a string nor an array.");
+                        Logger.LogWarning("The 'aud' claim was ignored because it was not a string nor an array.");
 
                         continue;
                     }
@@ -751,5 +751,7 @@ namespace Owin.Security.OAuth.Introspection
 
             return Options.AccessTokenFormat.Unprotect(Encoding.UTF8.GetString(bytes));
         }
+
+        public ILogger Logger => Options.Logger;
     }
 }
