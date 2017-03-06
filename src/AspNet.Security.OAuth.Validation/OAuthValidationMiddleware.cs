@@ -36,9 +36,9 @@ namespace AspNet.Security.OAuth.Validation
 
             if (Options.AccessTokenFormat == null)
             {
-                // Note: the following purposes must match the values used by ASOS.
+                // Note: the following purposes must match the ones used by the OpenID Connect server middleware.
                 var protector = Options.DataProtectionProvider.CreateProtector(
-                    "OpenIdConnectServerMiddleware", "ASOS", "Access_Token", "v1");
+                    "OpenIdConnectServerMiddleware", nameof(Options.AccessTokenFormat), "ASOS");
 
                 Options.AccessTokenFormat = new TicketDataFormat(protector);
             }

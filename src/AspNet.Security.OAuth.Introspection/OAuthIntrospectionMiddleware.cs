@@ -48,7 +48,7 @@ namespace AspNet.Security.OAuth.Introspection
             {
                 var protector = Options.DataProtectionProvider.CreateProtector(
                     nameof(OAuthIntrospectionMiddleware),
-                    Options.AuthenticationScheme, "Access_Token", "v1");
+                    nameof(Options.AccessTokenFormat), Options.AuthenticationScheme);
 
                 Options.AccessTokenFormat = new TicketDataFormat(protector);
             }

@@ -46,9 +46,9 @@ namespace Owin.Security.OAuth.Validation
 
             if (options.AccessTokenFormat == null)
             {
-                // Note: the following purposes must match the ones used by ASOS.
-                var protector = options.DataProtectionProvider.CreateProtector(
-                    "OpenIdConnectServerMiddleware", "ASOS", "Access_Token", "v1");
+                // Note: the following purposes must match the ones used by the OpenID Connect server middleware.
+                var protector = Options.DataProtectionProvider.CreateProtector(
+                    "OpenIdConnectServerMiddleware", nameof(Options.AccessTokenFormat), "ASOS");
 
                 options.AccessTokenFormat = new AspNetTicketDataFormat(new DataProtectorShim(protector));
             }
