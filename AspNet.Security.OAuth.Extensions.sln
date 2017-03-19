@@ -1,27 +1,27 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7AADF737-9B13-4E5C-8F32-8BF21429E093}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2B1B08E0-E9A3-40C0-B200-DE09952AF0E7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNet.Security.OAuth.Introspection", "src\AspNet.Security.OAuth.Introspection\AspNet.Security.OAuth.Introspection.xproj", "{A8569260-142C-427A-8B14-A8DF56CC15B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNet.Security.OAuth.Introspection", "src\AspNet.Security.OAuth.Introspection\AspNet.Security.OAuth.Introspection.csproj", "{A8569260-142C-427A-8B14-A8DF56CC15B7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNet.Security.OAuth.Introspection.Tests", "test\AspNet.Security.OAuth.Introspection.Tests\AspNet.Security.OAuth.Introspection.Tests.xproj", "{4070DC46-0FD5-4ADD-95B3-E9908AD82407}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNet.Security.OAuth.Introspection.Tests", "test\AspNet.Security.OAuth.Introspection.Tests\AspNet.Security.OAuth.Introspection.Tests.csproj", "{4070DC46-0FD5-4ADD-95B3-E9908AD82407}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNet.Security.OAuth.Validation", "src\AspNet.Security.OAuth.Validation\AspNet.Security.OAuth.Validation.xproj", "{043FD757-9C69-4A68-93BF-EAD2672BBD78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNet.Security.OAuth.Validation", "src\AspNet.Security.OAuth.Validation\AspNet.Security.OAuth.Validation.csproj", "{043FD757-9C69-4A68-93BF-EAD2672BBD78}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AspNet.Security.OAuth.Validation.Tests", "test\AspNet.Security.OAuth.Validation.Tests\AspNet.Security.OAuth.Validation.Tests.xproj", "{FC99E58D-86BC-4EAD-B282-C9F1491CCF96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspNet.Security.OAuth.Validation.Tests", "test\AspNet.Security.OAuth.Validation.Tests\AspNet.Security.OAuth.Validation.Tests.csproj", "{FC99E58D-86BC-4EAD-B282-C9F1491CCF96}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Owin.Security.OAuth.Introspection", "src\Owin.Security.OAuth.Introspection\Owin.Security.OAuth.Introspection.xproj", "{F9031F69-74BF-4321-88D5-2A606D3DA4E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Owin.Security.OAuth.Introspection", "src\Owin.Security.OAuth.Introspection\Owin.Security.OAuth.Introspection.csproj", "{F9031F69-74BF-4321-88D5-2A606D3DA4E4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Owin.Security.OAuth.Introspection.Tests", "test\Owin.Security.OAuth.Introspection.Tests\Owin.Security.OAuth.Introspection.Tests.xproj", "{A6B08CB3-0B3E-444D-BCF1-E9E41CEEC984}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Owin.Security.OAuth.Introspection.Tests", "test\Owin.Security.OAuth.Introspection.Tests\Owin.Security.OAuth.Introspection.Tests.csproj", "{A6B08CB3-0B3E-444D-BCF1-E9E41CEEC984}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Owin.Security.OAuth.Validation", "src\Owin.Security.OAuth.Validation\Owin.Security.OAuth.Validation.xproj", "{719AF040-773B-4DA5-B53E-28B26D1121FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Owin.Security.OAuth.Validation", "src\Owin.Security.OAuth.Validation\Owin.Security.OAuth.Validation.csproj", "{719AF040-773B-4DA5-B53E-28B26D1121FF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Owin.Security.OAuth.Validation.Tests", "test\Owin.Security.OAuth.Validation.Tests\Owin.Security.OAuth.Validation.Tests.xproj", "{6DC60DCF-B34B-4F14-9E73-BE466059A9B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Owin.Security.OAuth.Validation.Tests", "test\Owin.Security.OAuth.Validation.Tests\Owin.Security.OAuth.Validation.Tests.csproj", "{6DC60DCF-B34B-4F14-9E73-BE466059A9B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
