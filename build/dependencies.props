@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AspNetCoreVersion>1.0.0</AspNetCoreVersion>
-    <IdentityModelVersion>1.0.4.402070948</IdentityModelVersion>
+    <IdentityModelVersion>1.0.4.403061554</IdentityModelVersion>
     <IdentityModelCoreVersion>2.0.0</IdentityModelCoreVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <JsonNetVersion>9.0.1</JsonNetVersion>
