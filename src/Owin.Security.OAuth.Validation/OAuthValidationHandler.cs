@@ -328,7 +328,7 @@ namespace Owin.Security.OAuth.Validation
             }
         }
 
-        protected virtual bool ValidateAudience(AuthenticationTicket ticket)
+        private bool ValidateAudience(AuthenticationTicket ticket)
         {
             // If no explicit audience has been configured,
             // skip the default audience validation.
@@ -337,9 +337,9 @@ namespace Owin.Security.OAuth.Validation
                 return true;
             }
 
-            string audiences;
             // Extract the audiences from the authentication ticket.
-            if (!ticket.Properties.Dictionary.TryGetValue(OAuthValidationConstants.Properties.Audiences, out audiences))
+            var audiences = ticket.Properties.GetProperty(OAuthValidationConstants.Properties.Audiences);
+            if (string.IsNullOrEmpty(audiences))
             {
                 return false;
             }
@@ -356,7 +356,7 @@ namespace Owin.Security.OAuth.Validation
             return false;
         }
 
-        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token)
+        private async Task<AuthenticationTicket> CreateTicketAsync(string token)
         {
             var ticket = Options.AccessTokenFormat.Unprotect(token);
             if (ticket == null)
@@ -370,10 +370,10 @@ namespace Owin.Security.OAuth.Validation
                 ticket.Properties.Dictionary[OAuthValidationConstants.Properties.Token] = token;
             }
 
-            string scopes;
             // Copy the scopes extracted from the authentication ticket to the
             // ClaimsIdentity to make them easier to retrieve from application code.
-            if (ticket.Properties.Dictionary.TryGetValue(OAuthValidationConstants.Properties.Scopes, out scopes))
+            var scopes = ticket.Properties.GetProperty(OAuthValidationConstants.Properties.Scopes);
+            if (!string.IsNullOrEmpty(scopes))
             {
                 foreach (var scope in JArray.Parse(scopes).Values<string>())
                 {
@@ -404,6 +404,6 @@ namespace Owin.Security.OAuth.Validation
             return notification.Ticket;
         }
 
-        public ILogger Logger => Options.Logger;
+        private ILogger Logger => Options.Logger;
     }
 }

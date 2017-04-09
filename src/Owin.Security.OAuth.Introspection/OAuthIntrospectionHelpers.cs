@@ -27,8 +27,7 @@ namespace Owin.Security.OAuth.Introspection
                 throw new ArgumentException("The property name cannot be null or empty.", nameof(property));
             }
 
-            string value;
-            if (!properties.Dictionary.TryGetValue(property, out value))
+            if (!properties.Dictionary.TryGetValue(property, out string value))
             {
                 return null;
             }

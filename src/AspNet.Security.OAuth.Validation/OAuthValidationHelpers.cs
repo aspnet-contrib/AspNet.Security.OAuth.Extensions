@@ -27,8 +27,7 @@ namespace AspNet.Security.OAuth.Validation
                 throw new ArgumentException("The property name cannot be null or empty.", nameof(property));
             }
 
-            string value;
-            if (!properties.Items.TryGetValue(property, out value))
+            if (!properties.Items.TryGetValue(property, out string value))
             {
                 return null;
             }

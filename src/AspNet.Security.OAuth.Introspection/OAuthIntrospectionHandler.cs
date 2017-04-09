@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -361,7 +360,7 @@ namespace AspNet.Security.OAuth.Introspection
             return false;
         }
 
-        protected virtual async Task<JObject> GetIntrospectionPayloadAsync(string token)
+        private async Task<JObject> GetIntrospectionPayloadAsync(string token)
         {
             var configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
             if (configuration == null)
@@ -455,7 +454,7 @@ namespace AspNet.Security.OAuth.Introspection
             }
         }
 
-        protected virtual bool ValidateAudience(AuthenticationTicket ticket)
+        private bool ValidateAudience(AuthenticationTicket ticket)
         {
             // If no explicit audience has been configured,
             // skip the default audience validation.
@@ -464,9 +463,9 @@ namespace AspNet.Security.OAuth.Introspection
                 return true;
             }
 
-            string audiences;
             // Extract the audiences from the authentication ticket.
-            if (!ticket.Properties.Items.TryGetValue(OAuthIntrospectionConstants.Properties.Audiences, out audiences))
+            var audiences = ticket.Properties.GetProperty(OAuthIntrospectionConstants.Properties.Audiences);
+            if (string.IsNullOrEmpty(audiences))
             {
                 return false;
             }
@@ -483,7 +482,7 @@ namespace AspNet.Security.OAuth.Introspection
             return false;
         }
 
-        protected virtual async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload)
+        private async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload)
         {
             var identity = new ClaimsIdentity(Options.AuthenticationScheme, Options.NameClaimType, Options.RoleClaimType);
             var properties = new AuthenticationProperties();
@@ -743,19 +742,26 @@ namespace AspNet.Security.OAuth.Introspection
             return notification.Ticket;
         }
 
-        protected virtual Task StoreTicketAsync(string token, AuthenticationTicket ticket)
+        private Task StoreTicketAsync(string token, AuthenticationTicket ticket)
         {
+            if (Options.CachingPolicy == null)
+            {
+                return Task.FromResult(0);
+            }
+
             var bytes = Encoding.UTF8.GetBytes(Options.AccessTokenFormat.Protect(ticket));
             Debug.Assert(bytes != null);
 
-            return Options.Cache.SetAsync(token, bytes, new DistributedCacheEntryOptions
-            {
-                AbsoluteExpiration = Options.SystemClock.UtcNow + TimeSpan.FromMinutes(15)
-            });
+            return Options.Cache.SetAsync(token, bytes, Options.CachingPolicy);
         }
 
-        protected virtual async Task<AuthenticationTicket> RetrieveTicketAsync(string token)
+        private async Task<AuthenticationTicket> RetrieveTicketAsync(string token)
         {
+            if (Options.CachingPolicy == null)
+            {
+                return null;
+            }
+
             // Retrieve the serialized ticket from the distributed cache.
             // If no corresponding entry can be found, null is returned.
             var bytes = await Options.Cache.GetAsync(token);

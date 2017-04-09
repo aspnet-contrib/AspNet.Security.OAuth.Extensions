@@ -109,10 +109,21 @@ namespace AspNet.Security.OAuth.Introspection
         public string RoleClaimType { get; set; } = OAuthIntrospectionConstants.Claims.Role;
 
         /// <summary>
-        /// Gets or sets the cache used to store the authentication tickets
-        /// resolved from the access tokens received by the resource server.
+        /// Gets or sets the cache used to store the access tokens/authentication tickets
+        /// and the introspection responses returned received by the resource server.
         /// </summary>
         public IDistributedCache Cache { get; set; }
+
+        /// <summary>
+        /// Gets or sets the caching policy used to determine
+        /// how long the introspection responses should be cached.
+        /// Note: this property can be set to <c>null</c> to
+        /// prevent the introspection responses from being cached.
+        /// </summary>
+        public DistributedCacheEntryOptions CachingPolicy { get; set; } = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15)
+        };
 
         /// <summary>
         /// Gets or sets the object provided by the application to process events raised by the authentication middleware.
