@@ -6,6 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using Owin.Security.OAuth.Validation;
 
 namespace Owin
@@ -78,6 +79,34 @@ namespace Owin
             }
 
             return app.Use<OAuthValidationMiddleware>(app.Properties, options);
+        }
+
+        /// <summary>
+        /// Configures the OAuth2 validation middleware to enable logging.
+        /// </summary>
+        /// <param name="options">The options used to configure the OAuth2 validation middleware.</param>
+        /// <param name="configuration">The delegate used to configure the logger factory.</param>
+        /// <returns>The options used to configure the OAuth2 validation middleware.</returns>
+        public static OAuthValidationOptions UseLogging(
+            [NotNull] this OAuthValidationOptions options,
+            [NotNull] Action<ILoggerFactory> configuration)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var factory = new LoggerFactory();
+            configuration(factory);
+
+            options.Logger = factory.CreateLogger<OAuthValidationMiddleware>();
+
+            return options;
         }
     }
 }

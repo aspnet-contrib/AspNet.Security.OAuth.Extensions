@@ -6,6 +6,7 @@
 
 using System;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
 using Owin.Security.OAuth.Introspection;
 
 namespace Owin
@@ -63,6 +64,34 @@ namespace Owin
             }
 
             return app.Use<OAuthIntrospectionMiddleware>(app.Properties, options);
+        }
+
+        /// <summary>
+        /// Configures the OAuth2 introspection middleware to enable logging.
+        /// </summary>
+        /// <param name="options">The options used to configure the OAuth2 introspection middleware.</param>
+        /// <param name="configuration">The delegate used to configure the logger factory.</param>
+        /// <returns>The options used to configure the OAuth2 introspection middleware.</returns>
+        public static OAuthIntrospectionOptions UseLogging(
+            [NotNull] this OAuthIntrospectionOptions options,
+            [NotNull] Action<ILoggerFactory> configuration)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var factory = new LoggerFactory();
+            configuration(factory);
+
+            options.Logger = factory.CreateLogger<OAuthIntrospectionMiddleware>();
+
+            return options;
         }
     }
 }
