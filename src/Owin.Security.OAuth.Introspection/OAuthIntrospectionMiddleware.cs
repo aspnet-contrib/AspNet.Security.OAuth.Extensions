@@ -63,7 +63,7 @@ namespace Owin.Security.OAuth.Introspection
             if (options.AccessTokenFormat == null)
             {
                 var protector = Options.DataProtectionProvider.CreateProtector(
-                    nameof(OAuthIntrospectionMiddleware),
+                    nameof(OAuthIntrospectionHandler),
                     nameof(Options.AccessTokenFormat), Options.AuthenticationType);
 
                 options.AccessTokenFormat = new AspNetTicketDataFormat(new DataProtectorShim(protector));
