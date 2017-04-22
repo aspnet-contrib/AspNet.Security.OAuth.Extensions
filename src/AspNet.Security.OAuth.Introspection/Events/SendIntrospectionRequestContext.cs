@@ -6,26 +6,32 @@
 
 using System.Net.Http;
 using JetBrains.Annotations;
-using Microsoft.Owin;
-using Microsoft.Owin.Security.Provider;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
-namespace Owin.Security.OAuth.Introspection
+namespace AspNet.Security.OAuth.Introspection
 {
     /// <summary>
     /// Allows for custom handling of the call to the Authorization Server's Introspection endpoint.
     /// </summary>
-    public class RequestTokenIntrospectionContext : BaseContext<OAuthIntrospectionOptions>
+    public class SendIntrospectionRequestContext : BaseControlContext
     {
-        public RequestTokenIntrospectionContext(
-            [NotNull] IOwinContext context,
+        public SendIntrospectionRequestContext(
+            [NotNull] HttpContext context,
             [NotNull] OAuthIntrospectionOptions options,
-            [NotNull] HttpRequestMessage message,
+            [NotNull] HttpRequestMessage request,
             [NotNull] string token)
-            : base(context, options)
+            : base(context)
         {
-            Message = message;
+            Options = options;
+            Request = request;
             Token = token;
         }
+
+        /// <summary>
+        /// Gets the options used by the introspection middleware.
+        /// </summary>
+        public OAuthIntrospectionOptions Options { get; }
 
         /// <summary>
         /// An <see cref="HttpClient"/> for use by the application to call the authorization server.
@@ -33,9 +39,14 @@ namespace Owin.Security.OAuth.Introspection
         public HttpClient Client => Options.HttpClient;
 
         /// <summary>
-        /// Gets the HTTP message sent to the introspection endpoint.
+        /// Gets the HTTP request sent to the introspection endpoint.
         /// </summary>
-        public HttpRequestMessage Message { get; }
+        public new HttpRequestMessage Request { get; }
+
+        /// <summary>
+        /// Gets or sets the HTTP response returned by the introspection endpoint.
+        /// </summary>
+        public new HttpResponseMessage Response { get; set; }
 
         /// <summary>
         /// The access token parsed from the client request.

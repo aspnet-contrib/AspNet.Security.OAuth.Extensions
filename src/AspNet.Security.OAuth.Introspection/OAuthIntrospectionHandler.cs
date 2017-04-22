@@ -409,10 +409,37 @@ namespace AspNet.Security.OAuth.Introspection
 
             request.Content = new FormUrlEncodedContent(parameters);
 
-            var notification = new RequestTokenIntrospectionContext(Context, Options, request, token);
-            await Options.Events.RequestTokenIntrospection(notification);
+            var notification = new SendIntrospectionRequestContext(Context, Options, request, token);
+            await Options.Events.SendIntrospectionRequest(notification);
 
-            var response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Context.RequestAborted);
+            HttpResponseMessage response = null;
+
+            if (notification.HandledResponse)
+            {
+                // If no response has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Response == null)
+                {
+                    Logger.LogInformation("Authentication was stopped by application code.");
+
+                    return null;
+                }
+
+                response = notification.Response;
+            }
+
+            else if (notification.Skipped)
+            {
+                Logger.LogInformation("Authentication was skipped by application code.");
+
+                return null;
+            }
+
+            if (response == null)
+            {
+                response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Context.RequestAborted);
+            }
+
             if (!response.IsSuccessStatusCode)
             {
                 Logger.LogError("An error occurred while validating an access token: the remote server " +

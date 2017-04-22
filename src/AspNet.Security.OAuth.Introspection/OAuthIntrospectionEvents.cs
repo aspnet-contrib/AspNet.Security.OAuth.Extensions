@@ -27,7 +27,7 @@ namespace AspNet.Security.OAuth.Introspection
         /// <summary>
         /// Invoked when a token is to be sent to the authorization server for introspection.
         /// </summary>
-        public Func<RequestTokenIntrospectionContext, Task> OnRequestTokenIntrospection { get; set; } = context => Task.FromResult(0);
+        public Func<SendIntrospectionRequestContext, Task> OnSendIntrospectionRequest { get; set; } = context => Task.FromResult(0);
 
         /// <summary>
         /// Invoked when a token is to be parsed from a newly-received request.
@@ -52,7 +52,7 @@ namespace AspNet.Security.OAuth.Introspection
         /// <summary>
         /// Invoked when a token is to be sent to the authorization server for introspection.
         /// </summary>
-        public virtual Task RequestTokenIntrospection(RequestTokenIntrospectionContext context) => OnRequestTokenIntrospection(context);
+        public virtual Task SendIntrospectionRequest(SendIntrospectionRequestContext context) => OnSendIntrospectionRequest(context);
 
         /// <summary>
         /// Invoked when a token is to be parsed from a newly-received request.
