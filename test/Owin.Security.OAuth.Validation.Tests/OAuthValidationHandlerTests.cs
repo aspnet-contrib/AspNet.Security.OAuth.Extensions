@@ -542,7 +542,7 @@ namespace Owin.Security.OAuth.Validation.Tests
 
         [Theory]
         [InlineData("invalid-token", OAuthValidationConstants.Errors.InvalidToken, "The access token is not valid.")]
-        [InlineData("expired-token", OAuthValidationConstants.Errors.InvalidToken, "The access token is expired.")]
+        [InlineData("expired-token", OAuthValidationConstants.Errors.InvalidToken, "The access token is no longer valid.")]
         public async Task HandleUnauthorizedAsync_ErrorDetailsAreInferredFromAuthenticationFailure(
             string token, string error, string description)
         {

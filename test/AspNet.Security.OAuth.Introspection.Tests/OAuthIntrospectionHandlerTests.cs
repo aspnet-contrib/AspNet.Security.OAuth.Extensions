@@ -571,7 +571,7 @@ namespace AspNet.Security.OAuth.Introspection.Tests
 
         [Theory]
         [InlineData("invalid-token", OAuthIntrospectionConstants.Errors.InvalidToken, "The access token is not valid.")]
-        [InlineData("expired-token", OAuthIntrospectionConstants.Errors.InvalidToken, "The access token is expired.")]
+        [InlineData("expired-token", OAuthIntrospectionConstants.Errors.InvalidToken, "The access token is no longer valid.")]
         public async Task HandleUnauthorizedAsync_ErrorDetailsAreInferredFromAuthenticationFailure(
             string token, string error, string description)
         {

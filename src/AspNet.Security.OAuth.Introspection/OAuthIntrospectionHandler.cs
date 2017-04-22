@@ -126,7 +126,7 @@ namespace AspNet.Security.OAuth.Introspection
                     Error = new OAuthIntrospectionError
                     {
                         Error = OAuthIntrospectionConstants.Errors.InvalidToken,
-                        ErrorDescription = "The access token is expired."
+                        ErrorDescription = "The access token is no longer valid."
                     }
                 });
 

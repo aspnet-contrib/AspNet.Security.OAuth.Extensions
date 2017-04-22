@@ -14,7 +14,6 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Infrastructure;
@@ -125,7 +124,7 @@ namespace Owin.Security.OAuth.Introspection
                 Context.Set(typeof(OAuthIntrospectionError).FullName, new OAuthIntrospectionError
                 {
                     Error = OAuthIntrospectionConstants.Errors.InvalidToken,
-                    ErrorDescription = "The access token is expired."
+                    ErrorDescription = "The access token is no longer valid."
                 });
 
                 return null;

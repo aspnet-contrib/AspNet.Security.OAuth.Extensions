@@ -94,6 +94,21 @@ namespace Owin.Security.OAuth.Validation
                 return null;
             }
 
+            // Ensure that the authentication ticket is still valid.
+            if (ticket.Properties.ExpiresUtc.HasValue &&
+                ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
+            {
+                Logger.LogError("Authentication failed because the access token was expired.");
+
+                Context.Set(typeof(OAuthValidationError).FullName, new OAuthValidationError
+                {
+                    Error = OAuthValidationConstants.Errors.InvalidToken,
+                    ErrorDescription = "The access token is no longer valid."
+                });
+
+                return null;
+            }
+
             // Ensure that the access token was issued
             // to be used with this resource server.
             if (!ValidateAudience(ticket))
@@ -105,21 +120,6 @@ namespace Owin.Security.OAuth.Validation
                 {
                     Error = OAuthValidationConstants.Errors.InvalidToken,
                     ErrorDescription = "The access token is not valid for this resource server."
-                });
-
-                return null;
-            }
-
-            // Ensure that the authentication ticket is still valid.
-            if (ticket.Properties.ExpiresUtc.HasValue &&
-                ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
-            {
-                Logger.LogError("Authentication failed because the access token was expired.");
-
-                Context.Set(typeof(OAuthValidationError).FullName, new OAuthValidationError
-                {
-                    Error = OAuthValidationConstants.Errors.InvalidToken,
-                    ErrorDescription = "The access token is expired."
                 });
 
                 return null;

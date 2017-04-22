@@ -96,6 +96,22 @@ namespace AspNet.Security.OAuth.Validation
                 return AuthenticateResult.Fail("Authentication failed because the access token was invalid.");
             }
 
+            // Ensure that the authentication ticket is still valid.
+            if (ticket.Properties.ExpiresUtc.HasValue &&
+                ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
+            {
+                Context.Features.Set(new OAuthValidationFeature
+                {
+                    Error = new OAuthValidationError
+                    {
+                        Error = OAuthValidationConstants.Errors.InvalidToken,
+                        ErrorDescription = "The access token is no longer valid."
+                    }
+                });
+
+                return AuthenticateResult.Fail("Authentication failed because the access token was expired.");
+            }
+
             // Ensure that the access token was issued
             // to be used with this resource server.
             if (!ValidateAudience(ticket))
@@ -111,22 +127,6 @@ namespace AspNet.Security.OAuth.Validation
 
                 return AuthenticateResult.Fail("Authentication failed because the access token " +
                                                "was not valid for this resource server.");
-            }
-
-            // Ensure that the authentication ticket is still valid.
-            if (ticket.Properties.ExpiresUtc.HasValue &&
-                ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
-            {
-                Context.Features.Set(new OAuthValidationFeature
-                {
-                    Error = new OAuthValidationError
-                    {
-                        Error = OAuthValidationConstants.Errors.InvalidToken,
-                        ErrorDescription = "The access token is expired."
-                    }
-                });
-
-                return AuthenticateResult.Fail("Authentication failed because the access token was expired.");
             }
 
             var notification = new ValidateTokenContext(Context, Options, ticket);
