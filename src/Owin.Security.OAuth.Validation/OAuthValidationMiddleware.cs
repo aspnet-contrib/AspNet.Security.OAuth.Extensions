@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Owin;
 using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Security.Infrastructure;
@@ -62,7 +62,7 @@ namespace Owin.Security.OAuth.Validation
 
             if (options.Logger == null)
             {
-                options.Logger = new LoggerFactory().CreateLogger<OAuthValidationMiddleware>();
+                options.Logger = NullLogger.Instance;
             }
         }
 

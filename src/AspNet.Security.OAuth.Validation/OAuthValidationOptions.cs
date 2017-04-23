@@ -7,9 +7,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace AspNet.Security.OAuth.Validation
 {
@@ -17,16 +15,14 @@ namespace AspNet.Security.OAuth.Validation
     /// Exposes various settings needed to control
     /// the behavior of the validation middleware.
     /// </summary>
-    public class OAuthValidationOptions : AuthenticationOptions
+    public class OAuthValidationOptions : AuthenticationSchemeOptions
     {
         /// <summary>
         /// Creates a new instance of the <see cref="OAuthValidationOptions"/> class.
         /// </summary>
         public OAuthValidationOptions()
         {
-            AuthenticationScheme = OAuthValidationDefaults.AuthenticationScheme;
-            AutomaticAuthenticate = true;
-            AutomaticChallenge = true;
+            Events = new OAuthValidationEvents();
         }
 
         /// <summary>
@@ -56,6 +52,17 @@ namespace AspNet.Security.OAuth.Validation
         public bool IncludeErrorDetails { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets the object provided by the application to process events raised by the authentication middleware.
+        /// The application may implement the interface fully, or it may create an instance of
+        /// <see cref="OAuthValidationEvents"/> and assign delegates only to the events it wants to process.
+        /// </summary>
+        public new OAuthValidationEvents Events
+        {
+            get => (OAuthValidationEvents) base.Events;
+            set => base.Events = value;
+        }
+
+        /// <summary>
         /// Gets or sets the clock used to determine the current date/time.
         /// </summary>
         public ISystemClock SystemClock { get; set; } = new SystemClock();
@@ -68,17 +75,10 @@ namespace AspNet.Security.OAuth.Validation
 
         /// <summary>
         /// Gets or sets the data protection provider used to create the default
-        /// data protectors used by <see cref="OAuthValidationMiddleware"/>.
+        /// data protectors used by the OAuth2 validation handler.
         /// When this property is set to <c>null</c>, the data protection provider
         /// is directly retrieved from the dependency injection container.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
-
-        /// <summary>
-        /// Gets or sets the object provided by the application to process events raised by the authentication middleware.
-        /// The application may implement the interface fully, or it may create an instance of
-        /// <see cref="OAuthValidationEvents"/> and assign delegates only to the events it wants to process.
-        /// </summary>
-        public OAuthValidationEvents Events { get; set; } = new OAuthValidationEvents();
     }
 }

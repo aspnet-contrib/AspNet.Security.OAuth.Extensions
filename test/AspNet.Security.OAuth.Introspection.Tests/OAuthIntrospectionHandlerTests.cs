@@ -18,8 +18,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -31,6 +29,143 @@ namespace AspNet.Security.OAuth.Introspection.Tests
 {
     public class OAuthIntrospectionHandlerTests
     {
+        [Theory]
+        [InlineData(null, null)]
+        [InlineData("", "")]
+        [InlineData("client_id", null)]
+        [InlineData("client_id", "")]
+        [InlineData(null, "client_secret")]
+        [InlineData("", "client_secret")]
+        public async Task InitializeOptions_ThrowsAnExceptionForMissingCredentials(string identifier, string secret)
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Authority = new Uri("http://www.fabrikam.com/");
+                options.ClientId = identifier;
+                options.ClientSecret = secret;
+                options.RequireHttpsMetadata = false;
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("Client credentials must be configured.", exception.Message);
+        }
+
+        [Fact]
+        public async Task InitializeOptions_ThrowsAnExceptionForMissingEndpoint()
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Configuration = new OAuthIntrospectionConfiguration
+                {
+                    IntrospectionEndpoint = null
+                };
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("The introspection endpoint address cannot be null or empty.", exception.Message);
+        }
+
+        [Fact]
+        public async Task InitializeOptions_ThrowsAnExceptionForMissingAuthority()
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Authority = null;
+                options.MetadataAddress = null;
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("The authority or an absolute metadata endpoint address must be provided.", exception.Message);
+        }
+
+        [Fact]
+        public async Task InitializeOptions_ThrowsAnExceptionForRelativeAuthority()
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Authority = new Uri("/relative-path", UriKind.Relative);
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("The authority must be provided and must be an absolute URL.", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("http://www.fabrikam.com/path?param=value")]
+        [InlineData("http://www.fabrikam.com/path#param=value")]
+        public async Task InitializeOptions_ThrowsAnExceptionForInvalidAuthority(string authority)
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Authority = new Uri(authority);
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("The authority cannot contain a fragment or a query string.", exception.Message);
+        }
+
+        [Fact]
+        public async Task InitializeOptions_ThrowsAnExceptionForNonHttpsAuthority()
+        {
+            // Arrange
+            var server = CreateResourceServer(options =>
+            {
+                options.Authority = new Uri("http://www.fabrikam.com/");
+                options.RequireHttpsMetadata = true;
+            });
+
+            var client = server.CreateClient();
+
+            // Act and assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(delegate
+            {
+                return client.GetAsync("/initialization");
+            });
+
+            Assert.Equal("The metadata endpoint address must be a HTTPS URL when " +
+                         "'RequireHttpsMetadata' is not set to 'false'.", exception.Message);
+        }
+
         [Fact]
         public async Task HandleAuthenticateAsync_MissingTokenCausesInvalidAuthentication()
         {
@@ -380,14 +515,14 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_SkipToNextMiddlewareFromReceiveTokenCausesInvalidAuthentication()
+        public async Task HandleAuthenticateAsync_FailFromReceiveTokenCausesInvalidAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnRetrieveToken = context =>
                 {
-                    context.SkipToNextMiddleware();
+                    context.Fail(new Exception());
 
                     return Task.FromResult(0);
                 };
@@ -406,15 +541,14 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_NullTicketAndHandleResponseFromReceiveTokenCauseInvalidAuthentication()
+        public async Task HandleAuthenticateAsync_NoResultFromReceiveTokenCauseInvalidAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnRetrieveToken = context =>
                 {
-                    context.Ticket = null;
-                    context.HandleResponse();
+                    context.NoResult();
 
                     return Task.FromResult(0);
                 };
@@ -433,22 +567,18 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_ReplacedTicketAndHandleResponseFromReceiveTokenCauseSuccessfulAuthentication()
+        public async Task HandleAuthenticateAsync_SuccessFromReceiveTokenCauseSuccessfulAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnRetrieveToken = context =>
                 {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(OAuthIntrospectionDefaults.AuthenticationScheme);
                     identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Fabrikam"));
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
-
-                    context.HandleResponse();
+                    context.Principal = new ClaimsPrincipal(identity);
+                    context.Success();
 
                     return Task.FromResult(0);
                 };
@@ -468,14 +598,14 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_SkipToNextMiddlewareFromValidateTokenCausesInvalidAuthentication()
+        public async Task HandleAuthenticateAsync_FailFromValidateTokenCausesInvalidAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnValidateToken = context =>
                 {
-                    context.SkipToNextMiddleware();
+                    context.Fail(new Exception());
 
                     return Task.FromResult(0);
                 };
@@ -494,15 +624,14 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_NullTicketAndHandleResponseFromValidateTokenCauseInvalidAuthentication()
+        public async Task HandleAuthenticateAsync_NoResultFromValidateTokenCauseInvalidAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnValidateToken = context =>
                 {
-                    context.Ticket = null;
-                    context.HandleResponse();
+                    context.NoResult();
 
                     return Task.FromResult(0);
                 };
@@ -521,57 +650,18 @@ namespace AspNet.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
-        public async Task HandleAuthenticateAsync_ReplacedTicketAndHandleResponseFromValidateTokenCauseSuccessfulAuthentication()
+        public async Task HandleAuthenticateAsync_SuccessFromValidateTokenCauseSuccessfulAuthentication()
         {
             // Arrange
             var server = CreateResourceServer(options =>
             {
                 options.Events.OnValidateToken = context =>
                 {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(OAuthIntrospectionDefaults.AuthenticationScheme);
                     identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Contoso"));
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
-
-                    context.HandleResponse();
-
-                    return Task.FromResult(0);
-                };
-            });
-
-            var client = server.CreateClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "/");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
-
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("Contoso", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task HandleAuthenticateAsync_UpdatedTicketFromValidateTokenCausesSuccessfulAuthentication()
-        {
-            // Arrange
-            var server = CreateResourceServer(options =>
-            {
-                options.Events.OnValidateToken = context =>
-                {
-                    var identity = new ClaimsIdentity(context.Options.AuthenticationScheme);
-                    identity.AddClaim(new Claim(OAuthIntrospectionConstants.Claims.Subject, "Contoso"));
-
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(identity),
-                        new AuthenticationProperties(),
-                        context.Options.AuthenticationScheme);
-
-                    context.HandleResponse();
+                    context.Principal = new ClaimsPrincipal(identity);
+                    context.Success();
 
                     return Task.FromResult(0);
                 };
@@ -602,11 +692,11 @@ namespace AspNet.Security.OAuth.Introspection.Tests
                 options.Events.OnApplyChallenge = context =>
                 {
                     // Assert
-                    Assert.Equal(context.Error, "custom_error");
-                    Assert.Equal(context.ErrorDescription, "custom_error_description");
-                    Assert.Equal(context.ErrorUri, "custom_error_uri");
-                    Assert.Equal(context.Realm, "custom_realm");
-                    Assert.Equal(context.Scope, "custom_scope");
+                    Assert.Equal("custom_error", context.Error);
+                    Assert.Equal("custom_error_description", context.ErrorDescription);
+                    Assert.Equal("custom_error_uri", context.ErrorUri);
+                    Assert.Equal("custom_realm", context.Realm);
+                    Assert.Equal("custom_scope", context.Scope);
 
                     return Task.FromResult(0);
                 };
@@ -671,31 +761,6 @@ namespace AspNet.Security.OAuth.Introspection.Tests
             Assert.Equal(new[] { "Bearer" }, response.Headers.GetValues("X-Custom-Authentication-Header"));
         }
 
-        [Fact]
-        public async Task HandleUnauthorizedAsync_ApplyChallenge_AllowsSkippingToNextMiddleware()
-        {
-            // Arrange
-            var server = CreateResourceServer(options =>
-            {
-                options.Events.OnApplyChallenge = context =>
-                {
-                    context.SkipToNextMiddleware();
-
-                    return Task.FromResult(0);
-                };
-            });
-
-            var client = server.CreateClient();
-
-            // Act
-            var response = await client.GetAsync("/challenge");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Empty(response.Headers.WwwAuthenticate);
-            Assert.Empty(await response.Content.ReadAsStringAsync());
-        }
-
         [Theory]
         [InlineData(null, null, null, null, null, "Bearer")]
         [InlineData("custom_error", null, null, null, null, @"Bearer error=""custom_error""")]
@@ -746,39 +811,37 @@ namespace AspNet.Security.OAuth.Introspection.Tests
 
             builder.ConfigureServices(services =>
             {
-                services.AddAuthentication();
                 services.AddDistributedMemoryCache();
+
+                services.AddAuthentication()
+                    .AddOAuthIntrospection(options =>
+                    {
+                        options.ClientId = "Fabrikam";
+                        options.ClientSecret = "B4657E03-D619";
+
+                        options.Authority = server.BaseAddress;
+                        options.HttpClient = server.CreateClient();
+                        options.RequireHttpsMetadata = false;
+
+                        // Note: overriding the default data protection provider is not necessary for the tests to pass,
+                        // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
+                        // helps make the unit tests run faster, as no registry or disk access is required in this case.
+                        options.DataProtectionProvider = new EphemeralDataProtectionProvider(new LoggerFactory());
+
+                        // Run the configuration delegate
+                        // registered by the unit tests.
+                        configuration?.Invoke(options);
+                    });
             });
 
             builder.Configure(app =>
             {
-                app.UseOAuthIntrospection(options =>
-                {
-                    options.ClientId = "Fabrikam";
-                    options.ClientSecret = "B4657E03-D619";
-
-                    options.Authority = server.BaseAddress;
-                    options.HttpClient = server.CreateClient();
-                    options.RequireHttpsMetadata = false;
-
-                    // Note: overriding the default data protection provider is not necessary for the tests to pass,
-                    // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
-                    // helps make the unit tests run faster, as no registry or disk access is required in this case.
-                    options.DataProtectionProvider = new EphemeralDataProtectionProvider();
-
-                    // Run the configuration delegate
-                    // registered by the unit tests.
-                    configuration?.Invoke(options);
-                });
-
                 app.Map("/ticket", map => map.Run(async context =>
                 {
-                    var ticket = new AuthenticateContext(OAuthIntrospectionDefaults.AuthenticationScheme);
-                    await context.Authentication.AuthenticateAsync(ticket);
-
-                    if (!ticket.Accepted || ticket.Principal == null || ticket.Properties == null)
+                    var result = await context.AuthenticateAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
+                    if (result.Principal == null)
                     {
-                        await context.Authentication.ChallengeAsync();
+                        await context.ChallengeAsync();
 
                         return;
                     }
@@ -788,10 +851,10 @@ namespace AspNet.Security.OAuth.Introspection.Tests
                     // Return the authentication ticket as a JSON object.
                     await context.Response.WriteAsync(JsonConvert.SerializeObject(new
                     {
-                        Claims = from claim in ticket.Principal.Claims
+                        Claims = from claim in result.Principal.Claims
                                  select new { claim.Type, claim.Value },
 
-                        Properties = from property in ticket.Properties
+                        Properties = from property in result.Properties.Items
                                      select new { Name = property.Key, property.Value }
                     }));
                 }));
@@ -807,23 +870,28 @@ namespace AspNet.Security.OAuth.Introspection.Tests
                         [OAuthIntrospectionConstants.Properties.Scope] = "custom_scope",
                     });
 
-                    return context.Authentication.ChallengeAsync(OAuthIntrospectionDefaults.AuthenticationScheme, properties);
+                    return context.ChallengeAsync(OAuthIntrospectionDefaults.AuthenticationScheme, properties);
                 }));
 
-                app.Run(context =>
+                app.Run(async context =>
                 {
-                    if (!context.User.Identities.Any(identity => identity.IsAuthenticated))
+                    var result = await context.AuthenticateAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
+                    if (result.Principal == null)
                     {
-                        return context.Authentication.ChallengeAsync();
+                        await context.ChallengeAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
+
+                        return;
                     }
 
-                    var subject = context.User.FindFirst(OAuthIntrospectionConstants.Claims.Subject)?.Value;
+                    var subject = result.Principal.FindFirst(OAuthIntrospectionConstants.Claims.Subject)?.Value;
                     if (string.IsNullOrEmpty(subject))
                     {
-                        return context.Authentication.ChallengeAsync();
+                        await context.ChallengeAsync(OAuthIntrospectionDefaults.AuthenticationScheme);
+
+                        return;
                     }
 
-                    return context.Response.WriteAsync(subject);
+                    await context.Response.WriteAsync(subject);
                 });
             });
 

@@ -3,7 +3,7 @@
   <Import Project="..\..\build\packages.props" />
 
   <PropertyGroup>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,11 +19,11 @@
     <PackageReference Include="Microsoft.IdentityModel.Protocol.Extensions" Version="$(IdentityModelVersion)" />
     <PackageReference Include="Microsoft.Owin.Security.Interop" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
+    <PackageReference Include="System.Net.Http" Version="$(NetHttpVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System.IdentityModel" />
-    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <!--
@@ -55,6 +55,7 @@
       <NuspecProperties>$(NuspecProperties);aspNetCoreVersion=$(AspNetCoreVersion)</NuspecProperties>
       <NuspecProperties>$(NuspecProperties);jsonNetVersion=$(JsonNetVersion)</NuspecProperties>
       <NuspecProperties>$(NuspecProperties);identityModelVersion=$(IdentityModelVersion)</NuspecProperties>
+      <NuspecProperties>$(NuspecProperties);netHttpVersion=$(NetHttpVersion)</NuspecProperties>
     </PropertyGroup>
   </Target>
 

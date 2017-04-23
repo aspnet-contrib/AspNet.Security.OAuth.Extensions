@@ -5,8 +5,12 @@
  */
 
 using System;
+using System.ComponentModel;
 using AspNet.Security.OAuth.Introspection;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -20,16 +24,54 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
         /// </summary>
-        /// <param name="app">The application builder.</param>
+        /// <param name="builder">The authentication builder.</param>
+        /// <returns>The authentication builder.</returns>
+        public static AuthenticationBuilder AddOAuthIntrospection([NotNull] this AuthenticationBuilder builder)
+        {
+            return builder.AddOAuthIntrospection(OAuthIntrospectionDefaults.AuthenticationScheme);
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
         /// <param name="configuration">The delegate used to configure the introspection options.</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseOAuthIntrospection(
-            [NotNull] this IApplicationBuilder app,
+        /// <returns>The authentication builder.</returns>
+        public static AuthenticationBuilder AddOAuthIntrospection(
+            [NotNull] this AuthenticationBuilder builder,
             [NotNull] Action<OAuthIntrospectionOptions> configuration)
         {
-            if (app == null)
+            return builder.AddOAuthIntrospection(OAuthIntrospectionDefaults.AuthenticationScheme, configuration);
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
+        /// <param name="scheme">The authentication scheme associated with this instance.</param>
+        /// <returns>The authentication builder.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public static AuthenticationBuilder AddOAuthIntrospection(
+            [NotNull] this AuthenticationBuilder builder, [NotNull] string scheme)
+        {
+            return builder.AddOAuthIntrospection(scheme, options => { });
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
+        /// <param name="scheme">The authentication scheme associated with this instance.</param>
+        /// <param name="configuration">The delegate used to configure the introspection options.</param>
+        /// <returns>The authentication builder.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public static AuthenticationBuilder AddOAuthIntrospection(
+            [NotNull] this AuthenticationBuilder builder, [NotNull] string scheme,
+            [NotNull] Action<OAuthIntrospectionOptions> configuration)
+        {
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (configuration == null)
@@ -37,33 +79,17 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var options = new OAuthIntrospectionOptions();
-            configuration(options);
-
-            return app.UseOAuthIntrospection(options);
-        }
-
-        /// <summary>
-        /// Adds a new instance of the OAuth2 introspection middleware in the ASP.NET Core pipeline.
-        /// </summary>
-        /// <param name="app">The application builder.</param>
-        /// <param name="options">The options used to configure the introspection middleware.</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseOAuthIntrospection(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] OAuthIntrospectionOptions options)
-        {
-            if (app == null)
+            if (string.IsNullOrEmpty(scheme))
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentException("The scheme cannot be null or empty.", nameof(scheme));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OAuthIntrospectionOptions>,
+                                            OAuthIntrospectionInitializer>());
 
-            return app.UseMiddleware<OAuthIntrospectionMiddleware>(Options.Create(options));
+            return builder.AddScheme<OAuthIntrospectionOptions, OAuthIntrospectionHandler>(scheme, configuration);
         }
     }
 }

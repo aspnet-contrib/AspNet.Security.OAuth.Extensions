@@ -13,21 +13,17 @@ namespace AspNet.Security.OAuth.Validation
     /// <summary>
     /// Allows customization of the token validation logic.
     /// </summary>
-    public class ValidateTokenContext : BaseControlContext
+    public class ValidateTokenContext : ResultContext<OAuthValidationOptions>
     {
         public ValidateTokenContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthValidationOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
-            Ticket = ticket;
+            Principal = ticket.Principal;
+            Properties = ticket.Properties;
         }
-
-        /// <summary>
-        /// Gets the options used by the validation middleware.
-        /// </summary>
-        public OAuthValidationOptions Options { get; }
     }
 }

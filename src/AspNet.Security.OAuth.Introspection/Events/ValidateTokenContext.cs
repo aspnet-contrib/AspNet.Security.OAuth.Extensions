@@ -13,21 +13,17 @@ namespace AspNet.Security.OAuth.Introspection
     /// <summary>
     /// Allows customization of the token validation logic.
     /// </summary>
-    public class ValidateTokenContext : BaseControlContext
+    public class ValidateTokenContext : ResultContext<OAuthIntrospectionOptions>
     {
         public ValidateTokenContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
-            Ticket = ticket;
+            Principal = ticket.Principal;
+            Properties = ticket.Properties;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthIntrospectionOptions Options { get; }
     }
 }

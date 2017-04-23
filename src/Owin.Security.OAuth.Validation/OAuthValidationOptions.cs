@@ -55,7 +55,7 @@ namespace Owin.Security.OAuth.Validation
         public bool IncludeErrorDetails { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the logger used by <see cref="OAuthValidationMiddleware"/>.
+        /// Gets or sets the logger used by the OAuth2 validation handler.
         /// When unassigned, a default instance is created using the logger factory.
         /// </summary>
         public ILogger Logger { get; set; }
@@ -73,7 +73,7 @@ namespace Owin.Security.OAuth.Validation
 
         /// <summary>
         /// Gets or sets the data protection provider used to create the default
-        /// data protector used by <see cref="OAuthValidationMiddleware"/>.
+        /// data protector used by the OAuth2 validation handler.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
 

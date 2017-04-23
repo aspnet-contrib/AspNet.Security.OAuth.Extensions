@@ -13,20 +13,15 @@ namespace AspNet.Security.OAuth.Introspection
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseControlContext
+    public class RetrieveTokenContext : ResultContext<OAuthIntrospectionOptions>
     {
         public RetrieveTokenContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthIntrospectionOptions options)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthIntrospectionOptions Options { get; }
 
         /// <summary>
         /// Gets or sets the access token.

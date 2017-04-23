@@ -11,7 +11,8 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.Owin;
 using Microsoft.Owin.BuilderProperties;
@@ -71,15 +72,12 @@ namespace Owin.Security.OAuth.Introspection
 
             if (options.Cache == null)
             {
-                options.Cache = new MemoryDistributedCache(new MemoryCache(new MemoryCacheOptions
-                {
-                    CompactOnMemoryPressure = true
-                }));
+                options.Cache = new MemoryDistributedCache(new OptionsWrapper<MemoryDistributedCacheOptions>(new MemoryDistributedCacheOptions()));
             }
 
             if (options.Logger == null)
             {
-                options.Logger = new LoggerFactory().CreateLogger<OAuthIntrospectionMiddleware>();
+                options.Logger = NullLogger.Instance;
             }
 
             if (options.HttpClient == null)

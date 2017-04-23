@@ -7,34 +7,22 @@
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace AspNet.Security.OAuth.Introspection
 {
     /// <summary>
     /// Allows customization of the challenge process.
     /// </summary>
-    public class ApplyChallengeContext : BaseControlContext
+    public class ApplyChallengeContext : PropertiesContext<OAuthIntrospectionOptions>
     {
         public ApplyChallengeContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationProperties properties)
-            : base(context)
+            : base(context, scheme, options, properties)
         {
-            Options = options;
-            Properties = properties;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthIntrospectionOptions Options { get; }
-
-        /// <summary>
-        /// Gets the authentication properties associated with the challenge.
-        /// </summary>
-        public AuthenticationProperties Properties { get; }
 
         /// <summary>
         /// Gets or sets the "error" value returned to the caller as part
@@ -67,5 +55,15 @@ namespace AspNet.Security.OAuth.Introspection
         /// the caller as part of the WWW-Authenticate header.
         /// </summary>
         public string Scope { get; set; }
+
+        /// <summary>
+        /// Gets a boolean indicating if the operation was handled from user code.
+        /// </summary>
+        public bool Handled { get; private set; }
+
+        /// <summary>
+        /// Marks the operation as handled to prevent the default logic from being applied.
+        /// </summary>
+        public void HandleResponse() => Handled = true;
     }
 }

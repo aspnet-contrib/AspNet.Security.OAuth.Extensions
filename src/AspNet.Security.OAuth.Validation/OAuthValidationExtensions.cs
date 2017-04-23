@@ -5,8 +5,12 @@
  */
 
 using System;
+using System.ComponentModel;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -18,33 +22,56 @@ namespace Microsoft.AspNetCore.Builder
     public static class OAuthValidationExtensions
     {
         /// <summary>
-        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET 5 pipeline.
+        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET Core pipeline.
         /// </summary>
-        /// <param name="app">The application builder.</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseOAuthValidation([NotNull] this IApplicationBuilder app)
+        /// <param name="builder">The authentication builder.</param>
+        /// <returns>The authentication builder.</returns>
+        public static AuthenticationBuilder AddOAuthValidation([NotNull] this AuthenticationBuilder builder)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseOAuthValidation(options => { });
+            return builder.AddOAuthValidation(OAuthValidationDefaults.AuthenticationScheme);
         }
 
         /// <summary>
-        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET 5 pipeline.
+        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET Core pipeline.
         /// </summary>
-        /// <param name="app">The application builder.</param>
+        /// <param name="builder">The authentication builder.</param>
         /// <param name="configuration">The delegate used to configure the validation options.</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseOAuthValidation(
-            [NotNull] this IApplicationBuilder app,
+        /// <returns>The authentication builder.</returns>
+        public static AuthenticationBuilder AddOAuthValidation(
+            [NotNull] this AuthenticationBuilder builder,
             [NotNull] Action<OAuthValidationOptions> configuration)
         {
-            if (app == null)
+            return builder.AddOAuthValidation(OAuthValidationDefaults.AuthenticationScheme, configuration);
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
+        /// <param name="scheme">The authentication scheme associated with this instance.</param>
+        /// <returns>The authentication builder.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public static AuthenticationBuilder AddOAuthValidation(
+            [NotNull] this AuthenticationBuilder builder, [NotNull] string scheme)
+        {
+            return builder.AddOAuthValidation(scheme, options => { });
+        }
+
+        /// <summary>
+        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET Core pipeline.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
+        /// <param name="scheme">The authentication scheme associated with this instance.</param>
+        /// <param name="configuration">The delegate used to configure the validation options.</param>
+        /// <returns>The authentication builder.</returns>
+        [EditorBrowsable(EditorBrowsableState.Advanced)]
+        public static AuthenticationBuilder AddOAuthValidation(
+            [NotNull] this AuthenticationBuilder builder, [NotNull] string scheme,
+            [NotNull] Action<OAuthValidationOptions> configuration)
+        {
+            if (builder == null)
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentNullException(nameof(builder));
             }
 
             if (configuration == null)
@@ -52,33 +79,17 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var options = new OAuthValidationOptions();
-            configuration(options);
-
-            return app.UseOAuthValidation(options);
-        }
-
-        /// <summary>
-        /// Adds a new instance of the OAuth2 validation middleware in the ASP.NET 5 pipeline.
-        /// </summary>
-        /// <param name="app">The application builder.</param>
-        /// <param name="options">The options used to configure the validation middleware.</param>
-        /// <returns>The application builder.</returns>
-        public static IApplicationBuilder UseOAuthValidation(
-            [NotNull] this IApplicationBuilder app,
-            [NotNull] OAuthValidationOptions options)
-        {
-            if (app == null)
+            if (string.IsNullOrEmpty(scheme))
             {
-                throw new ArgumentNullException(nameof(app));
+                throw new ArgumentException("The scheme cannot be null or empty.", nameof(scheme));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            // Note: TryAddEnumerable() is used here to ensure the initializer is only registered once.
+            builder.Services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPostConfigureOptions<OAuthValidationOptions>,
+                                            OAuthValidationInitializer>());
 
-            return app.UseMiddleware<OAuthValidationMiddleware>(Options.Create(options));
+            return builder.AddScheme<OAuthValidationOptions, OAuthValidationHandler>(scheme, configuration);
         }
     }
 }

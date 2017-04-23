@@ -8,9 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Protocols;
 
@@ -20,16 +18,14 @@ namespace AspNet.Security.OAuth.Introspection
     /// Exposes various settings needed to control
     /// the behavior of the introspection middleware.
     /// </summary>
-    public class OAuthIntrospectionOptions : AuthenticationOptions
+    public class OAuthIntrospectionOptions : AuthenticationSchemeOptions
     {
         /// <summary>
         /// Creates a new instance of the <see cref="OAuthIntrospectionOptions"/> class.
         /// </summary>
         public OAuthIntrospectionOptions()
         {
-            AuthenticationScheme = OAuthIntrospectionDefaults.AuthenticationScheme;
-            AutomaticAuthenticate = true;
-            AutomaticChallenge = true;
+            Events = new OAuthIntrospectionEvents();
         }
 
         /// <summary>
@@ -137,7 +133,11 @@ namespace AspNet.Security.OAuth.Introspection
         /// The application may implement the interface fully, or it may create an instance of
         /// <see cref="OAuthIntrospectionEvents"/> and assign delegates only to the events it wants to process.
         /// </summary>
-        public OAuthIntrospectionEvents Events { get; set; } = new OAuthIntrospectionEvents();
+        public new OAuthIntrospectionEvents Events
+        {
+            get => (OAuthIntrospectionEvents) base.Events;
+            set => base.Events = value;
+        }
 
         /// <summary>
         /// Gets or sets the HTTP client used to communicate with the remote OAuth2 server.
@@ -157,7 +157,7 @@ namespace AspNet.Security.OAuth.Introspection
 
         /// <summary>
         /// Gets or sets the data protection provider used to create the default
-        /// data protectors used by <see cref="OAuthIntrospectionMiddleware"/>.
+        /// data protectors used by the OAuth2 introspection handler.
         /// When this property is set to <c>null</c>, the data protection provider
         /// is directly retrieved from the dependency injection container.
         /// </summary>

@@ -14,24 +14,19 @@ namespace AspNet.Security.OAuth.Introspection
     /// <summary>
     /// Allows for custom handling of the call to the Authorization Server's Introspection endpoint.
     /// </summary>
-    public class SendIntrospectionRequestContext : BaseControlContext
+    public class SendIntrospectionRequestContext : BaseContext<OAuthIntrospectionOptions>
     {
         public SendIntrospectionRequestContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] HttpRequestMessage request,
             [NotNull] string token)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
             Request = request;
             Token = token;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthIntrospectionOptions Options { get; }
 
         /// <summary>
         /// An <see cref="HttpClient"/> for use by the application to call the authorization server.
@@ -52,5 +47,15 @@ namespace AspNet.Security.OAuth.Introspection
         /// The access token parsed from the client request.
         /// </summary>
         public string Token { get; }
+
+        /// <summary>
+        /// Gets a boolean indicating if the operation was handled from user code.
+        /// </summary>
+        public bool Handled { get; private set; }
+
+        /// <summary>
+        /// Marks the operation as handled to prevent the default logic from being applied.
+        /// </summary>
+        public void HandleResponse() => Handled = true;
     }
 }

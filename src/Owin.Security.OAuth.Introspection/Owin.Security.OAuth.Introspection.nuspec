@@ -13,21 +13,21 @@
     <tags>$tags$</tags>
     <repository type="$repositoryType$" url="$repositoryUrl$" />
     <dependencies>
-      <group targetFramework=".NETFramework4.5.1">
+      <group targetFramework=".NETFramework4.6.1">
         <dependency id="Microsoft.Owin.Security.Interop" version="$aspNetCoreVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Extensions.Caching.Memory" version="$aspNetCoreVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.Extensions.Logging" version="$aspNetCoreVersion$" exclude="Build,Analyzers" />
         <dependency id="Newtonsoft.Json" version="$jsonNetVersion$" exclude="Build,Analyzers" />
         <dependency id="Microsoft.IdentityModel.Protocol.Extensions" version="$identityModelVersion$" exclude="Build,Analyzers" />
+        <dependency id="System.Net.Http" version="$netHttpVersion$" exclude="Build,Analyzers" />
       </group>
     </dependencies>
     <frameworkAssemblies>
-      <frameworkAssembly assemblyName="System.IdentityModel" targetFramework=".NETFramework4.5.1" />
-      <frameworkAssembly assemblyName="System.Net.Http" targetFramework=".NETFramework4.5.1" />
+      <frameworkAssembly assemblyName="System.IdentityModel" targetFramework=".NETFramework4.6.1" />
     </frameworkAssemblies>
   </metadata>
   <files>
-    <file src="bin\$configuration$\net451\$id$.dll" target="lib\net451" />
-    <file src="bin\$configuration$\net451\$id$.xml" target="lib\net451" />
+    <file src="bin\$configuration$\net461\$id$.dll" target="lib\net461" />
+    <file src="bin\$configuration$\net461\$id$.xml" target="lib\net461" />
   </files>
 </package>

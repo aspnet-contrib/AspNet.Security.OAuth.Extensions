@@ -12,4 +12,14 @@
     <DebugType Condition=" '$(OS)' != 'Windows_NT' ">portable</DebugType>
   </PropertyGroup>
 
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NetStandardLibraryNetFrameworkVersion)" />
+  </ItemGroup>
+
+  <Target Name="WorkaroundAppConfigPathTooLong" BeforeTargets="GenerateBindingRedirects">
+    <PropertyGroup>
+      <_GenerateBindingRedirectsIntermediateAppConfig>$(IntermediateOutputPath)$(TargetFileName).config</_GenerateBindingRedirectsIntermediateAppConfig>
+    </PropertyGroup>
+  </Target>
+
 </Project>

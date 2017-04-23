@@ -7,12 +7,13 @@
 using System;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
@@ -23,28 +24,25 @@ namespace AspNet.Security.OAuth.Validation
     /// </summary>
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions>
     {
+        public OAuthValidationHandler(
+            [NotNull] IOptionsMonitor<OAuthValidationOptions> options,
+            [NotNull] ILoggerFactory logger,
+            [NotNull] UrlEncoder encoder,
+            [NotNull] ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        {
+        }
+
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var context = new RetrieveTokenContext(Context, Options);
-            await Options.Events.RetrieveToken(context);
+            var context = new RetrieveTokenContext(Context, Scheme, Options);
+            await Events.RetrieveToken(context);
 
-            if (context.HandledResponse)
+            if (context.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (context.Ticket == null)
-                {
-                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return AuthenticateResult.Success(context.Ticket);
-            }
-
-            else if (context.Skipped)
-            {
-                Logger.LogInformation("Authentication was skipped by application code.");
-
-                return AuthenticateResult.Skip();
+                return context.Result;
             }
 
             var token = context.Token;
@@ -57,7 +55,7 @@ namespace AspNet.Security.OAuth.Validation
                 {
                     Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
 
                 // Ensure that the authorization header contains the mandatory "Bearer" scheme.
@@ -67,7 +65,7 @@ namespace AspNet.Security.OAuth.Validation
                     Logger.LogDebug("Authentication was skipped because an incompatible " +
                                     "scheme was used in the 'Authorization' header.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
 
                 // Extract the token from the authorization header.
@@ -78,14 +76,14 @@ namespace AspNet.Security.OAuth.Validation
                     Logger.LogDebug("Authentication was skipped because the bearer token " +
                                     "was missing from the 'Authorization' header.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
             }
 
             // Try to unprotect the token and return an error
             // if the ticket can't be decrypted or validated.
-            var ticket = await CreateTicketAsync(token);
-            if (ticket == null)
+            var result = await CreateTicketAsync(token);
+            if (!result.Succeeded)
             {
                 Context.Features.Set(new OAuthValidationFeature
                 {
@@ -96,10 +94,11 @@ namespace AspNet.Security.OAuth.Validation
                     }
                 });
 
-                return AuthenticateResult.Fail("Authentication failed because the access token was invalid.");
+                return result;
             }
 
             // Ensure that the authentication ticket is still valid.
+            var ticket = result.Ticket;
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
             {
@@ -132,47 +131,33 @@ namespace AspNet.Security.OAuth.Validation
                                                "was not valid for this resource server.");
             }
 
-            var notification = new ValidateTokenContext(Context, Options, ticket);
-            await Options.Events.ValidateToken(notification);
+            var notification = new ValidateTokenContext(Context, Scheme, Options, ticket);
+            await Events.ValidateToken(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (notification.Ticket == null)
-                {
-                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return AuthenticateResult.Success(notification.Ticket);
+                return notification.Result;
             }
 
-            else if (notification.Skipped)
+            // Optimization: avoid allocating a new AuthenticationTicket
+            // if the principal/properties instances were not replaced.
+            if (ReferenceEquals(notification.Principal, ticket.Principal) &&
+                ReferenceEquals(notification.Properties, ticket.Properties))
             {
-                Logger.LogInformation("Authentication was skipped by application code.");
-
-                return AuthenticateResult.Skip();
+                return AuthenticateResult.Success(ticket);
             }
 
-            // Allow the application code to replace the ticket
-            // reference from the ValidateToken event.
-            ticket = notification.Ticket;
-
-            if (ticket == null)
-            {
-                return AuthenticateResult.Fail("Authentication was stopped by application code.");
-            }
-
-            return AuthenticateResult.Success(ticket);
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                notification.Principal, notification.Properties, Scheme.Name));
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            var properties = new AuthenticationProperties(context.Properties);
-
             // Note: always return the error/error_description/error_uri/realm/scope specified
             // in the authentication properties even if IncludeErrorDetails is set to false.
-            var notification = new ApplyChallengeContext(Context, Options, properties)
+            var notification = new ApplyChallengeContext(Context, Scheme, Options, properties)
             {
                 Error = properties.GetProperty(OAuthValidationConstants.Properties.Error),
                 ErrorDescription = properties.GetProperty(OAuthValidationConstants.Properties.ErrorDescription),
@@ -229,16 +214,13 @@ namespace AspNet.Security.OAuth.Validation
                 notification.Realm = Options.Realm;
             }
 
-            await Options.Events.ApplyChallenge(notification);
+            await Events.ApplyChallenge(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Handled)
             {
-                return true;
-            }
+                Logger.LogInformation("The default challenge handling was skipped from user code.");
 
-            else if (notification.Skipped)
-            {
-                return false;
+                return;
             }
 
             Response.StatusCode = 401;
@@ -336,10 +318,6 @@ namespace AspNet.Security.OAuth.Validation
 
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
             }
-
-            // Return false to allow other non-interactive authentication middleware to process
-            // the challenge response (e.g Basic or Integrated Windows Authentication).
-            return false;
         }
 
         private bool ValidateAudience(AuthenticationTicket ticket)
@@ -370,12 +348,12 @@ namespace AspNet.Security.OAuth.Validation
             return false;
         }
 
-        private async Task<AuthenticationTicket> CreateTicketAsync(string token)
+        private async Task<AuthenticateResult> CreateTicketAsync(string token)
         {
             var ticket = Options.AccessTokenFormat.Unprotect(token);
             if (ticket == null)
             {
-                return null;
+                return AuthenticateResult.Fail("Authentication failed because the access token was invalid.");
             }
 
             if (Options.SaveToken)
@@ -401,27 +379,28 @@ namespace AspNet.Security.OAuth.Validation
                 }
             }
 
-            var notification = new CreateTicketContext(Context, Options, ticket);
-            await Options.Events.CreateTicket(notification);
+            var notification = new CreateTicketContext(Context, Scheme, Options, ticket);
+            await Events.CreateTicket(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (notification.Ticket == null)
-                {
-                    return null;
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return notification.Ticket;
+                return notification.Result;
             }
 
-            else if (notification.Skipped)
+            // Optimization: avoid allocating a new AuthenticationTicket
+            // if the principal/properties instances were not replaced.
+            if (ReferenceEquals(notification.Principal, ticket.Principal) &&
+                ReferenceEquals(notification.Properties, ticket.Properties))
             {
-                return null;
+                return AuthenticateResult.Success(ticket);
             }
 
-            return notification.Ticket;
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                notification.Principal, notification.Properties, Scheme.Name));
         }
+
+        private new OAuthValidationEvents Events => (OAuthValidationEvents) base.Events;
     }
 }

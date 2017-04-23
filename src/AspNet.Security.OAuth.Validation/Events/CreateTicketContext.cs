@@ -14,31 +14,22 @@ namespace AspNet.Security.OAuth.Validation
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseControlContext
+    public class CreateTicketContext : ResultContext<OAuthValidationOptions>
     {
         public CreateTicketContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthValidationOptions options,
             [NotNull] AuthenticationTicket ticket)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
-            Ticket = ticket;
+            Principal = ticket.Principal;
+            Properties = ticket.Properties;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthValidationOptions Options { get; }
 
         /// <summary>
         /// Gets the identity containing the user claims.
         /// </summary>
         public ClaimsIdentity Identity => Principal?.Identity as ClaimsIdentity;
-
-        /// <summary>
-        /// Gets the principal containing the user claims.
-        /// </summary>
-        public ClaimsPrincipal Principal => Ticket?.Principal;
     }
 }

@@ -14,6 +14,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Testing;
 using Newtonsoft.Json;
@@ -584,11 +585,11 @@ namespace Owin.Security.OAuth.Introspection.Tests
                 options.Events.OnApplyChallenge = context =>
                 {
                     // Assert
-                    Assert.Equal(context.Error, "custom_error");
-                    Assert.Equal(context.ErrorDescription, "custom_error_description");
-                    Assert.Equal(context.ErrorUri, "custom_error_uri");
-                    Assert.Equal(context.Realm, "custom_realm");
-                    Assert.Equal(context.Scope, "custom_scope");
+                    Assert.Equal("custom_error", context.Error);
+                    Assert.Equal("custom_error_description", context.ErrorDescription);
+                    Assert.Equal("custom_error_uri", context.ErrorUri);
+                    Assert.Equal("custom_realm", context.Realm);
+                    Assert.Equal("custom_scope", context.Scope);
 
                     return Task.FromResult(0);
                 };
@@ -737,7 +738,7 @@ namespace Owin.Security.OAuth.Introspection.Tests
                     // Note: overriding the default data protection provider is not necessary for the tests to pass,
                     // but is useful to ensure unnecessary keys are not persisted in testing environments, which also
                     // helps make the unit tests run faster, as no registry or disk access is required in this case.
-                    options.DataProtectionProvider = new EphemeralDataProtectionProvider();
+                    options.DataProtectionProvider = new EphemeralDataProtectionProvider(new LoggerFactory());
 
                     // Run the configuration delegate
                     // registered by the unit tests.

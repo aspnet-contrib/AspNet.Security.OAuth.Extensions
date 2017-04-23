@@ -13,20 +13,15 @@ namespace AspNet.Security.OAuth.Validation
     /// <summary>
     /// Allows custom parsing of access tokens from requests.
     /// </summary>
-    public class RetrieveTokenContext : BaseControlContext
+    public class RetrieveTokenContext : ResultContext<OAuthValidationOptions>
     {
         public RetrieveTokenContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthValidationOptions options)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
         }
-
-        /// <summary>
-        /// Gets the options used by the validation middleware.
-        /// </summary>
-        public OAuthValidationOptions Options { get; }
 
         /// <summary>
         /// Gets or sets the access token.

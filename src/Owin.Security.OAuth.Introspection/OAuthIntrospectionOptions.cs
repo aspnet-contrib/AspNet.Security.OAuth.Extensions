@@ -144,7 +144,7 @@ namespace Owin.Security.OAuth.Introspection
         public HttpClient HttpClient { get; set; }
 
         /// <summary>
-        /// Gets or sets the logger used by <see cref="OAuthIntrospectionMiddleware"/>.
+        /// Gets or sets the logger used by the OAuth2 introspection handler.
         /// When unassigned, a default instance is created using the logger factory.
         /// </summary>
         public ILogger Logger { get; set; }
@@ -162,7 +162,7 @@ namespace Owin.Security.OAuth.Introspection
 
         /// <summary>
         /// Gets or sets the data protection provider used to create the default
-        /// data protectors used by <see cref="OAuthIntrospectionMiddleware"/>.
+        /// data protectors used by the OAuth2 introspection handler.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
     }

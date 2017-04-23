@@ -13,12 +13,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -30,28 +31,25 @@ namespace AspNet.Security.OAuth.Introspection
     /// </summary>
     public class OAuthIntrospectionHandler : AuthenticationHandler<OAuthIntrospectionOptions>
     {
+        public OAuthIntrospectionHandler(
+            [NotNull] IOptionsMonitor<OAuthIntrospectionOptions> options,
+            [NotNull] ILoggerFactory logger,
+            [NotNull] UrlEncoder encoder,
+            [NotNull] ISystemClock clock)
+            : base(options, logger, encoder, clock)
+        {
+        }
+
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            var context = new RetrieveTokenContext(Context, Options);
-            await Options.Events.RetrieveToken(context);
+            var context = new RetrieveTokenContext(Context, Scheme, Options);
+            await Events.RetrieveToken(context);
 
-            if (context.HandledResponse)
+            if (context.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (context.Ticket == null)
-                {
-                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return AuthenticateResult.Success(context.Ticket);
-            }
-
-            else if (context.Skipped)
-            {
-                Logger.LogInformation("Authentication was skipped by application code.");
-
-                return AuthenticateResult.Skip();
+                return context.Result;
             }
 
             var token = context.Token;
@@ -64,7 +62,7 @@ namespace AspNet.Security.OAuth.Introspection
                 {
                     Logger.LogDebug("Authentication was skipped because no bearer token was received.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
 
                 // Ensure that the authorization header contains the mandatory "Bearer" scheme.
@@ -74,7 +72,7 @@ namespace AspNet.Security.OAuth.Introspection
                     Logger.LogDebug("Authentication was skipped because an incompatible " +
                                     "scheme was used in the 'Authorization' header.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
 
                 // Extract the token from the authorization header.
@@ -85,7 +83,7 @@ namespace AspNet.Security.OAuth.Introspection
                     Logger.LogDebug("Authentication was skipped because the bearer token " +
                                     "was missing from the 'Authorization' header.");
 
-                    return AuthenticateResult.Skip();
+                    return AuthenticateResult.NoResult();
                 }
             }
 
@@ -114,8 +112,22 @@ namespace AspNet.Security.OAuth.Introspection
 
                 // Create a new authentication ticket from the introspection
                 // response returned by the authorization server.
-                ticket = await CreateTicketAsync(token, payload);
-                Debug.Assert(ticket != null);
+                var result = await CreateTicketAsync(token, payload);
+                if (!result.Succeeded)
+                {
+                    Context.Features.Set(new OAuthIntrospectionFeature
+                    {
+                        Error = new OAuthIntrospectionError
+                        {
+                            Error = OAuthIntrospectionConstants.Errors.InvalidToken,
+                            ErrorDescription = "The access token is not valid."
+                        }
+                    });
+
+                    return result;
+                }
+
+                ticket = result.Ticket;
 
                 await StoreTicketAsync(token, ticket);
             }
@@ -168,47 +180,33 @@ namespace AspNet.Security.OAuth.Introspection
                                                "was not valid for this resource server.");
             }
 
-            var notification = new ValidateTokenContext(Context, Options, ticket);
-            await Options.Events.ValidateToken(notification);
+            var notification = new ValidateTokenContext(Context, Scheme, Options, ticket);
+            await Events.ValidateToken(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (notification.Ticket == null)
-                {
-                    return AuthenticateResult.Fail("Authentication was stopped by application code.");
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return AuthenticateResult.Success(notification.Ticket);
+                return notification.Result;
             }
 
-            else if (notification.Skipped)
+            // Optimization: avoid allocating a new AuthenticationTicket
+            // if the principal/properties instances were not replaced.
+            if (ReferenceEquals(notification.Principal, ticket.Principal) &&
+                ReferenceEquals(notification.Properties, ticket.Properties))
             {
-                Logger.LogInformation("Authentication was skipped by application code.");
-
-                return AuthenticateResult.Skip();
+                return AuthenticateResult.Success(ticket);
             }
 
-            // Allow the application code to replace the ticket
-            // reference from the ValidateToken event.
-            ticket = notification.Ticket;
-
-            if (ticket == null)
-            {
-                return AuthenticateResult.Fail("Authentication was stopped by application code.");
-            }
-
-            return AuthenticateResult.Success(ticket);
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                notification.Principal, notification.Properties, Scheme.Name));
         }
 
-        protected override async Task<bool> HandleUnauthorizedAsync(ChallengeContext context)
+        protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            var properties = new AuthenticationProperties(context.Properties);
-
             // Note: always return the error/error_description/error_uri/realm/scope specified
             // in the authentication properties even if IncludeErrorDetails is set to false.
-            var notification = new ApplyChallengeContext(Context, Options, properties)
+            var notification = new ApplyChallengeContext(Context, Scheme, Options, properties)
             {
                 Error = properties.GetProperty(OAuthIntrospectionConstants.Properties.Error),
                 ErrorDescription = properties.GetProperty(OAuthIntrospectionConstants.Properties.ErrorDescription),
@@ -265,16 +263,13 @@ namespace AspNet.Security.OAuth.Introspection
                 notification.Realm = Options.Realm;
             }
 
-            await Options.Events.ApplyChallenge(notification);
+            await Events.ApplyChallenge(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Handled)
             {
-                return true;
-            }
+                Logger.LogInformation("The default challenge handling was skipped from user code.");
 
-            else if (notification.Skipped)
-            {
-                return false;
+                return;
             }
 
             Response.StatusCode = 401;
@@ -372,10 +367,6 @@ namespace AspNet.Security.OAuth.Introspection
 
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
             }
-
-            // Return false to allow other non-interactive authentication middleware to process
-            // the challenge response (e.g Basic or Integrated Windows Authentication).
-            return false;
         }
 
         private async Task<JObject> GetIntrospectionPayloadAsync(string token)
@@ -427,32 +418,17 @@ namespace AspNet.Security.OAuth.Introspection
 
             request.Content = new FormUrlEncodedContent(parameters);
 
-            var notification = new SendIntrospectionRequestContext(Context, Options, request, token);
-            await Options.Events.SendIntrospectionRequest(notification);
+            var notification = new SendIntrospectionRequestContext(Context, Scheme, Options, request, token);
+            await Events.SendIntrospectionRequest(notification);
 
-            HttpResponseMessage response = null;
-
-            if (notification.HandledResponse)
+            if (notification.Handled)
             {
-                // If no response has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (notification.Response == null)
-                {
-                    Logger.LogInformation("Authentication was stopped by application code.");
-
-                    return null;
-                }
-
-                response = notification.Response;
-            }
-
-            else if (notification.Skipped)
-            {
-                Logger.LogInformation("Authentication was skipped by application code.");
+                Logger.LogInformation("The default challenge handling was skipped from user code.");
 
                 return null;
             }
 
+            var response = notification.Response;
             if (response == null)
             {
                 response = await Options.HttpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, Context.RequestAborted);
@@ -542,9 +518,9 @@ namespace AspNet.Security.OAuth.Introspection
             return false;
         }
 
-        private async Task<AuthenticationTicket> CreateTicketAsync(string token, JObject payload)
+        private async Task<AuthenticateResult> CreateTicketAsync(string token, JObject payload)
         {
-            var identity = new ClaimsIdentity(Options.AuthenticationScheme, Options.NameClaimType, Options.RoleClaimType);
+            var identity = new ClaimsIdentity(Scheme.Name, Options.NameClaimType, Options.RoleClaimType);
             var properties = new AuthenticationProperties();
 
             if (Options.SaveToken)
@@ -789,31 +765,28 @@ namespace AspNet.Security.OAuth.Introspection
 
             // Create a new authentication ticket containing the identity
             // built from the claims returned by the authorization server.
-            var ticket = new AuthenticationTicket(
-                new ClaimsPrincipal(identity),
-                properties, Options.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Scheme.Name);
 
-            var notification = new CreateTicketContext(Context, Options, ticket, payload);
-            await Options.Events.CreateTicket(notification);
+            var notification = new CreateTicketContext(Context, Scheme, Options, ticket, payload);
+            await Events.CreateTicket(notification);
 
-            if (notification.HandledResponse)
+            if (notification.Result != null)
             {
-                // If no ticket has been provided, return a failed result to
-                // indicate that authentication was rejected by application code.
-                if (notification.Ticket == null)
-                {
-                    return null;
-                }
+                Logger.LogInformation("The default authentication handling was skipped from user code.");
 
-                return notification.Ticket;
+                return notification.Result;
             }
 
-            else if (notification.Skipped)
+            // Optimization: avoid allocating a new AuthenticationTicket
+            // if the principal/properties instances were not replaced.
+            if (ReferenceEquals(notification.Principal, ticket.Principal) &&
+                ReferenceEquals(notification.Properties, ticket.Properties))
             {
-                return null;
+                return AuthenticateResult.Success(ticket);
             }
 
-            return notification.Ticket;
+            return AuthenticateResult.Success(new AuthenticationTicket(
+                notification.Principal, notification.Properties, Scheme.Name));
         }
 
         private Task StoreTicketAsync(string token, AuthenticationTicket ticket)
@@ -846,5 +819,7 @@ namespace AspNet.Security.OAuth.Introspection
 
             return Options.AccessTokenFormat.Unprotect(Encoding.UTF8.GetString(bytes));
         }
+
+        private new OAuthIntrospectionEvents Events => (OAuthIntrospectionEvents) base.Events;
     }
 }

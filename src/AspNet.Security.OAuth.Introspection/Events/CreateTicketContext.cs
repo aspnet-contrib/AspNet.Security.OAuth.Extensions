@@ -15,34 +15,25 @@ namespace AspNet.Security.OAuth.Introspection
     /// <summary>
     /// Allows interception of the AuthenticationTicket creation process.
     /// </summary>
-    public class CreateTicketContext : BaseControlContext
+    public class CreateTicketContext : ResultContext<OAuthIntrospectionOptions>
     {
         public CreateTicketContext(
             [NotNull] HttpContext context,
+            [NotNull] AuthenticationScheme scheme,
             [NotNull] OAuthIntrospectionOptions options,
             [NotNull] AuthenticationTicket ticket,
             [NotNull] JObject payload)
-            : base(context)
+            : base(context, scheme, options)
         {
-            Options = options;
-            Ticket = ticket;
+            Principal = ticket.Principal;
+            Properties = ticket.Properties;
             Payload = payload;
         }
-
-        /// <summary>
-        /// Gets the options used by the introspection middleware.
-        /// </summary>
-        public OAuthIntrospectionOptions Options { get; }
 
         /// <summary>
         /// Gets the identity containing the user claims.
         /// </summary>
         public ClaimsIdentity Identity => Principal?.Identity as ClaimsIdentity;
-
-        /// <summary>
-        /// Gets the principal containing the user claims.
-        /// </summary>
-        public ClaimsPrincipal Principal => Ticket?.Principal;
 
         /// <summary>
         /// Gets the payload extracted from the introspection response.
