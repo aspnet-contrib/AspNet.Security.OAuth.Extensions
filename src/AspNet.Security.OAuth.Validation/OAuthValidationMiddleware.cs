@@ -14,8 +14,15 @@ using Microsoft.Extensions.Options;
 
 namespace AspNet.Security.OAuth.Validation
 {
+    /// <summary>
+    /// Provides the entry point necessary to register the
+    /// OAuth2 validation handler in an ASP.NET Core pipeline.
+    /// </summary>
     public class OAuthValidationMiddleware : AuthenticationMiddleware<OAuthValidationOptions>
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OAuthValidationMiddleware"/> class.
+        /// </summary>
         public OAuthValidationMiddleware(
             [NotNull] RequestDelegate next,
             [NotNull] IOptions<OAuthValidationOptions> options,
@@ -44,6 +51,10 @@ namespace AspNet.Security.OAuth.Validation
             }
         }
 
+        /// <summary>
+        /// Returns a new <see cref="OAuthValidationHandler"/> instance.
+        /// </summary>
+        /// <returns>A new instance of the <see cref="OAuthValidationHandler"/> class.</returns>
         protected override AuthenticationHandler<OAuthValidationOptions> CreateHandler()
         {
             return new OAuthValidationHandler();

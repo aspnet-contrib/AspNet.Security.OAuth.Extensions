@@ -18,6 +18,9 @@ using Newtonsoft.Json.Linq;
 
 namespace AspNet.Security.OAuth.Validation
 {
+    /// <summary>
+    /// Provides the logic necessary to extract and validate tokens from HTTP requests.
+    /// </summary>
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions>
     {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()

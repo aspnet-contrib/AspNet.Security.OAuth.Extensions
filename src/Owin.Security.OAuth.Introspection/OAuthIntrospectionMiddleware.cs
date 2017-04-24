@@ -20,8 +20,15 @@ using Microsoft.Owin.Security.Interop;
 
 namespace Owin.Security.OAuth.Introspection
 {
+    /// <summary>
+    /// Provides the entry point necessary to register the
+    /// OAuth2 introspection handler in an OWIN/Katana pipeline.
+    /// </summary>
     public class OAuthIntrospectionMiddleware : AuthenticationMiddleware<OAuthIntrospectionOptions>
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OAuthIntrospectionMiddleware"/> class.
+        /// </summary>
         public OAuthIntrospectionMiddleware(
             [NotNull] OwinMiddleware next,
             [NotNull] IDictionary<string, object> properties,
@@ -145,6 +152,10 @@ namespace Owin.Security.OAuth.Introspection
             }
         }
 
+        /// <summary>
+        /// Returns a new <see cref="OAuthIntrospectionHandler"/> instance.
+        /// </summary>
+        /// <returns>A new instance of the <see cref="OAuthIntrospectionHandler"/> class.</returns>
         protected override AuthenticationHandler<OAuthIntrospectionOptions> CreateHandler()
         {
             return new OAuthIntrospectionHandler();

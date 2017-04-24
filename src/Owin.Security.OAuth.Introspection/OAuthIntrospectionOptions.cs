@@ -16,8 +16,15 @@ using Microsoft.Owin.Security;
 
 namespace Owin.Security.OAuth.Introspection
 {
+    /// <summary>
+    /// Exposes various settings needed to control
+    /// the behavior of the introspection middleware.
+    /// </summary>
     public class OAuthIntrospectionOptions : AuthenticationOptions
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OAuthIntrospectionOptions"/> class.
+        /// </summary>
         public OAuthIntrospectionOptions()
             : base(OAuthIntrospectionDefaults.AuthenticationScheme)
         {

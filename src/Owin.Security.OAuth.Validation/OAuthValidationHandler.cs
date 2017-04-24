@@ -15,6 +15,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Owin.Security.OAuth.Validation
 {
+    /// <summary>
+    /// Provides the logic necessary to extract and validate tokens from HTTP requests.
+    /// </summary>
     public class OAuthValidationHandler : AuthenticationHandler<OAuthValidationOptions>
     {
         protected override async Task<AuthenticationTicket> AuthenticateCoreAsync()

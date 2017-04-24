@@ -25,6 +25,9 @@ using Newtonsoft.Json.Linq;
 
 namespace AspNet.Security.OAuth.Introspection
 {
+    /// <summary>
+    /// Provides the logic necessary to extract and validate tokens from HTTP requests.
+    /// </summary>
     public class OAuthIntrospectionHandler : AuthenticationHandler<OAuthIntrospectionOptions>
     {
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()

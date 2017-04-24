@@ -13,8 +13,15 @@ using Microsoft.Owin.Security;
 
 namespace Owin.Security.OAuth.Validation
 {
+    /// <summary>
+    /// Exposes various settings needed to control
+    /// the behavior of the validation middleware.
+    /// </summary>
     public class OAuthValidationOptions : AuthenticationOptions
     {
+        /// <summary>
+        /// Creates a new instance of the <see cref="OAuthValidationOptions"/> class.
+        /// </summary>
         public OAuthValidationOptions()
             : base(OAuthValidationDefaults.AuthenticationScheme)
         {

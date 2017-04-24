@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Provides extension methods used to configure the OAuth2
-    /// validation middleware in an ASP.NET 5 pipeline.
+    /// validation middleware in an ASP.NET Core pipeline.
     /// </summary>
     public static class OAuthValidationExtensions
     {
