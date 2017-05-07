@@ -76,6 +76,77 @@ namespace Owin.Security.OAuth.Introspection.Tests
         }
 
         [Fact]
+        public async Task AuthenticateCoreAsync_MissingTokenUsageAllowsSuccessfulAuthentication()
+        {
+            // Arrange
+            var server = CreateResourceServer();
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token-without-usage");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task AuthenticateCoreAsync_InvalidTokenUsageCausesInvalidAuthentication()
+        {
+            // Arrange
+            var server = CreateResourceServer();
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue(
+                "Bearer", "valid-token-with-invalid-usage");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AuthenticateCoreAsync_ValidTokenUsageAllowsSuccessfulAuthentication()
+        {
+            // Arrange
+            var server = CreateResourceServer();
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "valid-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication()
+        {
+            // Arrange
+            var server = CreateResourceServer();
+            var client = server.HttpClient;
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "expired-token");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
         public async Task AuthenticateCoreAsync_MissingAudienceCausesInvalidAuthentication()
         {
             // Arrange
@@ -187,23 +258,6 @@ namespace Owin.Security.OAuth.Introspection.Tests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Fabrikam", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public async Task AuthenticateCoreAsync_ExpiredTicketCausesInvalidAuthentication()
-        {
-            // Arrange
-            var server = CreateResourceServer();
-            var client = server.HttpClient;
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "/");
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "expired-token");
-
-            // Act
-            var response = await client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         [Fact]
@@ -810,6 +864,27 @@ namespace Owin.Security.OAuth.Introspection.Tests
                                 payload[OAuthIntrospectionConstants.Claims.Active] = true;
                                 payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
                                 payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
+                                payload[OAuthIntrospectionConstants.Claims.TokenUsage] =
+                                    OAuthIntrospectionConstants.TokenUsages.AccessToken;
+
+                                break;
+                            }
+
+                            case "valid-token-without-usage":
+                            {
+                                payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
+                                payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
+
+                                break;
+                            }
+
+                            case "valid-token-with-invalid-usage":
+                            {
+                                payload[OAuthIntrospectionConstants.Claims.Active] = true;
+                                payload[OAuthIntrospectionConstants.Claims.JwtId] = "jwt-token-identifier";
+                                payload[OAuthIntrospectionConstants.Claims.Subject] = "Fabrikam";
+                                payload[OAuthIntrospectionConstants.Claims.TokenUsage] = "refresh_token";
 
                                 break;
                             }

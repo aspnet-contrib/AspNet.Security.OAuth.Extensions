@@ -21,6 +21,7 @@ namespace AspNet.Security.OAuth.Introspection
             public const string Scope = "scope";
             public const string Subject = "sub";
             public const string TokenType = "token_type";
+            public const string TokenUsage = "token_usage";
             public const string Username = "username";
         }
 
@@ -64,6 +65,7 @@ namespace AspNet.Security.OAuth.Introspection
 
         public static class Properties
         {
+            public const string AccessToken = "access_token";
             public const string Audiences = ".audiences";
             public const string Error = ".error";
             public const string ErrorDescription = ".error_description";
@@ -71,8 +73,8 @@ namespace AspNet.Security.OAuth.Introspection
             public const string Realm = ".realm";
             public const string Scope = ".scope";
             public const string Scopes = ".scopes";
-            public const string TicketId = ".ticket_id";
-            public const string Token = "access_token";
+            public const string TokenId = ".token_id";
+            public const string TokenUsage = ".token_usage";
         }
 
         public static class Schemes
@@ -87,6 +89,11 @@ namespace AspNet.Security.OAuth.Introspection
         }
 
         public static class TokenTypeHints
+        {
+            public const string AccessToken = "access_token";
+        }
+
+        public static class TokenUsages
         {
             public const string AccessToken = "access_token";
         }

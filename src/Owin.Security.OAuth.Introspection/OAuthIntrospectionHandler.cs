@@ -118,6 +118,20 @@ namespace Owin.Security.OAuth.Introspection
                 await StoreTicketAsync(token, ticket);
             }
 
+            // Ensure that the token can be used as an access token.
+            if (!ValidateTokenUsage(ticket))
+            {
+                Logger.LogError("Authentication failed because the token was not an access token.");
+
+                Context.Set(typeof(OAuthIntrospectionError).FullName, new OAuthIntrospectionError
+                {
+                    Error = OAuthIntrospectionConstants.Errors.InvalidToken,
+                    ErrorDescription = "The access token is not valid."
+                });
+
+                return null;
+            }
+
             // Ensure that the authentication ticket is still valid.
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
@@ -474,6 +488,21 @@ namespace Owin.Security.OAuth.Introspection
             }
         }
 
+        private bool ValidateTokenUsage(AuthenticationTicket ticket)
+        {
+            // Try to extract the "token_usage" resolved from the introspection response.
+            // If this non-standard claim was not returned by the authorization server,
+            // assume the validated token can be used as an access token.
+            var usage = ticket.Properties.GetProperty(OAuthIntrospectionConstants.Properties.TokenUsage);
+            if (string.IsNullOrEmpty(usage))
+            {
+                return true;
+            }
+
+            // If the "token_usage" claim was returned, it must be equal to "access_token".
+            return string.Equals(usage, OAuthIntrospectionConstants.TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
+        }
+
         private bool ValidateAudience(AuthenticationTicket ticket)
         {
             // If no explicit audience has been configured,
@@ -510,7 +539,7 @@ namespace Owin.Security.OAuth.Introspection
             if (Options.SaveToken)
             {
                 // Store the access token in the authentication ticket.
-                properties.Dictionary[OAuthIntrospectionConstants.Properties.Token] = token;
+                properties.Dictionary[OAuthIntrospectionConstants.Properties.AccessToken] = token;
             }
 
             foreach (var property in payload.Properties())
@@ -532,6 +561,20 @@ namespace Owin.Security.OAuth.Introspection
                     case OAuthIntrospectionConstants.Claims.TokenType:
                     case OAuthIntrospectionConstants.Claims.NotBefore:
                         continue;
+
+                    case OAuthIntrospectionConstants.Claims.TokenUsage:
+                    {
+                        if (property.Value.Type != JTokenType.String)
+                        {
+                            Logger.LogWarning("The 'token_usage' claim was ignored because it was not a string value.");
+
+                            continue;
+                        }
+
+                        properties.Dictionary[OAuthIntrospectionConstants.Properties.TokenUsage] = (string) property.Value;
+
+                        continue;
+                    }
 
                     case OAuthIntrospectionConstants.Claims.IssuedAt:
                     {
@@ -581,7 +624,7 @@ namespace Owin.Security.OAuth.Introspection
                             continue;
                         }
 
-                        properties.Dictionary[OAuthIntrospectionConstants.Properties.TicketId] = (string) property;
+                        properties.Dictionary[OAuthIntrospectionConstants.Properties.TokenId] = (string) property;
 
                         continue;
                     }

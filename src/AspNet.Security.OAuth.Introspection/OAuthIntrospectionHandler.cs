@@ -120,6 +120,21 @@ namespace AspNet.Security.OAuth.Introspection
                 await StoreTicketAsync(token, ticket);
             }
 
+            // Ensure that the token can be used as an access token.
+            if (!ValidateTokenUsage(ticket))
+            {
+                Context.Features.Set(new OAuthIntrospectionFeature
+                {
+                    Error = new OAuthIntrospectionError
+                    {
+                        Error = OAuthIntrospectionConstants.Errors.InvalidToken,
+                        ErrorDescription = "The access token is not valid."
+                    }
+                });
+
+                return AuthenticateResult.Fail("Authentication failed because the token was not an access token.");
+            }
+
             // Ensure that the authentication ticket is still valid.
             if (ticket.Properties.ExpiresUtc.HasValue &&
                 ticket.Properties.ExpiresUtc.Value < Options.SystemClock.UtcNow)
@@ -484,6 +499,21 @@ namespace AspNet.Security.OAuth.Introspection
             }
         }
 
+        private bool ValidateTokenUsage(AuthenticationTicket ticket)
+        {
+            // Try to extract the "token_usage" resolved from the introspection response.
+            // If this non-standard claim was not returned by the authorization server,
+            // assume the validated token can be used as an access token.
+            var usage = ticket.Properties.GetProperty(OAuthIntrospectionConstants.Properties.TokenUsage);
+            if (string.IsNullOrEmpty(usage))
+            {
+                return true;
+            }
+
+            // If the "token_usage" claim was returned, it must be equal to "access_token".
+            return string.Equals(usage, OAuthIntrospectionConstants.TokenUsages.AccessToken, StringComparison.OrdinalIgnoreCase);
+        }
+
         private bool ValidateAudience(AuthenticationTicket ticket)
         {
             // If no explicit audience has been configured,
@@ -522,7 +552,7 @@ namespace AspNet.Security.OAuth.Introspection
                 // Store the access token in the authentication ticket.
                 properties.StoreTokens(new[]
                 {
-                    new AuthenticationToken { Name = OAuthIntrospectionConstants.Properties.Token, Value = token }
+                    new AuthenticationToken { Name = OAuthIntrospectionConstants.Properties.AccessToken, Value = token }
                 });
             }
 
@@ -545,6 +575,20 @@ namespace AspNet.Security.OAuth.Introspection
                     case OAuthIntrospectionConstants.Claims.TokenType:
                     case OAuthIntrospectionConstants.Claims.NotBefore:
                         continue;
+
+                    case OAuthIntrospectionConstants.Claims.TokenUsage:
+                    {
+                        if (property.Value.Type != JTokenType.String)
+                        {
+                            Logger.LogWarning("The 'token_usage' claim was ignored because it was not a string value.");
+
+                            continue;
+                        }
+
+                        properties.Items[OAuthIntrospectionConstants.Properties.TokenUsage] = (string) property.Value;
+
+                        continue;
+                    }
 
                     case OAuthIntrospectionConstants.Claims.IssuedAt:
                     {
@@ -594,7 +638,7 @@ namespace AspNet.Security.OAuth.Introspection
                             continue;
                         }
 
-                        properties.Items[OAuthIntrospectionConstants.Properties.TicketId] = (string) property;
+                        properties.Items[OAuthIntrospectionConstants.Properties.TokenId] = (string) property;
 
                         continue;
                     }
