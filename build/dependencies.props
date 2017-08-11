@@ -1,18 +1,18 @@
 <Project>
 
   <PropertyGroup>
-    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
-    <CoreFxVersion>4.4.0-*</CoreFxVersion>
-    <IdentityModelCoreVersion>2.1.3-*</IdentityModelCoreVersion>
+    <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
+    <CoreFxVersion>4.4.0</CoreFxVersion>
+    <IdentityModelCoreVersion>2.1.4</IdentityModelCoreVersion>
     <JetBrainsVersion>10.3.0</JetBrainsVersion>
     <JsonNetVersion>10.0.2</JsonNetVersion>
     <MoqVersion>4.7.63</MoqVersion>
     <NetHttpVersion>4.3.2</NetHttpVersion>
-    <NetStandardImplicitPackageVersion>2.0.0-*</NetStandardImplicitPackageVersion>
-    <NetStandardLibraryNetFrameworkVersion>2.0.0-*</NetStandardLibraryNetFrameworkVersion>
-    <OwinVersion>4.0.0-*</OwinVersion>
-    <RuntimeFrameworkVersion>2.0.0-*</RuntimeFrameworkVersion>
-    <TestSdkVersion>15.3.0-*</TestSdkVersion>
+    <NetStandardImplicitPackageVersion>2.0.0</NetStandardImplicitPackageVersion>
+    <NetStandardLibraryNetFrameworkVersion>2.0.0</NetStandardLibraryNetFrameworkVersion>
+    <OwinVersion>3.0.1</OwinVersion>
+    <RuntimeFrameworkVersion>2.0.0</RuntimeFrameworkVersion>
+    <TestSdkVersion>15.3.0</TestSdkVersion>
     <XunitVersion>2.3.0-*</XunitVersion>
   </PropertyGroup>
 
