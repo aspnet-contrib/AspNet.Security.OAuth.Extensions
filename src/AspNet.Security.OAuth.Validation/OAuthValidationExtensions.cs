@@ -9,11 +9,10 @@ using System.ComponentModel;
 using AspNet.Security.OAuth.Validation;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Provides extension methods used to configure the OAuth2
