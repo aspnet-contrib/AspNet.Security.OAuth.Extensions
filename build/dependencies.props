@@ -1,6 +1,6 @@
 <Project>
 
-  <PropertyGroup>
+  <PropertyGroup Label="Package Versions">
     <AspNetCoreVersion>1.0.0</AspNetCoreVersion>
     <IdentityModelVersion>1.0.4.403061554</IdentityModelVersion>
     <IdentityModelCoreVersion>2.0.0</IdentityModelCoreVersion>
@@ -11,7 +11,7 @@
     <OwinVersion>3.0.1</OwinVersion>
     <RuntimeFrameworkVersion>1.0.0</RuntimeFrameworkVersion>
     <TestSdkVersion>15.0.0</TestSdkVersion>
-    <XunitVersion>2.2.0</XunitVersion>
+    <XunitVersion>2.3.1</XunitVersion>
   </PropertyGroup>
 
 </Project>
