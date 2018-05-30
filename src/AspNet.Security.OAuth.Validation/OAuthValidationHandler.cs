@@ -370,9 +370,43 @@ namespace AspNet.Security.OAuth.Validation
             return false;
         }
 
+        private async Task<AuthenticationTicket> DecryptTokenAsync(string token)
+        {
+            var notification = new DecryptTokenContext(Context, Options, token)
+            {
+                DataFormat = Options.AccessTokenFormat
+            };
+
+            await Options.Events.DecryptToken(notification);
+
+            if (notification.HandledResponse)
+            {
+                // If no ticket has been provided, return a failed result to
+                // indicate that authentication was rejected by application code.
+                if (notification.Ticket == null)
+                {
+                    return null;
+                }
+
+                return notification.Ticket;
+            }
+
+            else if (notification.Skipped)
+            {
+                return null;
+            }
+
+            if (notification.DataFormat == null)
+            {
+                throw new InvalidOperationException("A data formatter must be provided.");
+            }
+
+            return notification.DataFormat.Unprotect(token);
+        }
+
         private async Task<AuthenticationTicket> CreateTicketAsync(string token)
         {
-            var ticket = Options.AccessTokenFormat.Unprotect(token);
+            var ticket = await DecryptTokenAsync(token);
             if (ticket == null)
             {
                 return null;
