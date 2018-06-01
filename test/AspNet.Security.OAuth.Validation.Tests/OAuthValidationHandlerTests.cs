@@ -535,11 +535,11 @@ namespace AspNet.Security.OAuth.Validation.Tests
                 options.Events.OnApplyChallenge = context =>
                 {
                     // Assert
-                    Assert.Equal(context.Error, "custom_error");
-                    Assert.Equal(context.ErrorDescription, "custom_error_description");
-                    Assert.Equal(context.ErrorUri, "custom_error_uri");
-                    Assert.Equal(context.Realm, "custom_realm");
-                    Assert.Equal(context.Scope, "custom_scope");
+                    Assert.Equal("custom_error", context.Error);
+                    Assert.Equal("custom_error_description", context.ErrorDescription);
+                    Assert.Equal("custom_error_uri", context.ErrorUri);
+                    Assert.Equal("custom_realm", context.Realm);
+                    Assert.Equal("custom_scope", context.Scope);
 
                     return Task.FromResult(0);
                 };
