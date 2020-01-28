@@ -38,7 +38,7 @@ app.UseOAuthIntrospection(options =>
 
 ## Contributors
 
-**AspNet.Security.OAuth.Extensions** is actively maintained by **[Kévin Chalet](https://github.com/PinpointTownes)**. Contributions are welcome and can be submitted using pull requests.
+**AspNet.Security.OAuth.Extensions** is actively maintained by **[Kévin Chalet](https://github.com/kevinchalet)**. Contributions are welcome and can be submitted using pull requests.
 
 ## License
 
