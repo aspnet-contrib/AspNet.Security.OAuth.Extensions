@@ -1,14 +1,14 @@
 AspNet.Security.OAuth.Extensions
 ================================
 
+> :warning: **This project has been merged into OpenIddict. For more information, read [Introducing OpenIddict 3.0 beta1](https://kevinchalet.com/2020/06/11/introducing-openiddict-3-0-beta1/)**.
+
 **AspNet.Security.OAuth.Extensions** is a collection of **token validation middleware** for ASP.NET Core 1.0 and OWIN/Katana.
 
 **The latest nightly builds can be found on [MyGet](https://www.myget.org/gallery/aspnet-contrib)**.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/aa7t5nfxpiri1e85/branch/release?svg=true)](https://ci.appveyor.com/project/aspnet-contrib/aspnet-security-oauth-extensions/branch/release)
 [![Build status](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions.svg?branch=release)](https://travis-ci.org/aspnet-contrib/AspNet.Security.OAuth.Extensions)
-
-> **As part of the ASP.NET Core 3.0 migration, this project has been merged into OpenIddict. For more information, read the [OpenIddict 3.0 roadmap](https://github.com/openiddict/openiddict-core/issues/736)**.
 
 ## Get started
 
